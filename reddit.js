@@ -109,7 +109,7 @@ module.exports = function RedditAPI(conn) {
         }
       );
     },
-    getAllPosts: function(options, callback) {
+    getAllPosts: function(options, theQuery, callback) {
       // In case we are called without an options parameter, shift all the parameters manually
       if (!callback) {
         callback = options;
@@ -117,35 +117,14 @@ module.exports = function RedditAPI(conn) {
       }
       var limit = options.numPerPage || 25; // if options.numPerPage is "falsy" then use 25
       var offset = (options.page || 0) * limit;
-      console.log(options);
-      conn.query(`
-        SELECT 
-          posts.id, 
-          posts.title, 
-          posts.url,
-          posts.userId, 
-          posts.createdAt, 
-          posts.updatedAt, 
-          users.username, 
-          users.createdAt AS "usersince", 
-          users.updatedAt AS "userupdate",
-          subreddits.title AS "subredditName",
-          subreddits.description AS "subredditDesc",
-          subreddits.createdAt AS "subredditSince",
-          subreddits.updatedAt AS "subredditUpdate"
-        FROM posts
-        JOIN users ON (posts.userId = users.id)
-        LEFT JOIN subreddits ON (subreddits.id = posts.subreddit_id)
-        ORDER BY createdAt ASC
-        LIMIT ? OFFSET ?`
-        , [limit, offset],
+      conn.query(theQuery, [limit, offset],
         function(err, results) {
           if (err) {
             callback(err);
           }
           else {
              var theData = results.map(function(x){
-              return {id: x.id, title: x.title, url:x.url, createdAt:x.createdAt, updatedAt:x.updatedAt, user:{userId:x.userId, username:x.username,createdAt:x.usersince,updatedAt:x.userupdate}, subreddit: {title: x.subredditName, description: x.subredditDesc, createdAt: x.subredditSince, updatedAt: x.subredditUpdate}};
+              return {id: x.id, title: x.title, url:x.url, createdAt:x.createdAt, updatedAt:x.updatedAt, user:{userId:x.userId, username:x.username,createdAt:x.usersince,updatedAt:x.userupdate}, subreddit: {title: x.subredditName, description: x.subredditDesc, createdAt: x.subredditSince, updatedAt: x.subredditUpdate},voteScore: x.voteScore};
             });
             callback(null, theData);
           }
@@ -218,6 +197,33 @@ module.exports = function RedditAPI(conn) {
           }
         }
       );
+    },
+    userLookup: function(thisUser, callback) {
+      conn.query(`
+        SELECT id, username
+        FROM users
+        WHERE (users.id = ?)`, [thisUser],
+        function(err, results) {
+          if (err) {
+            callback(err);
+          }
+          else {
+            callback(null, results);
+          }
+        }
+      );
+    },
+    voteCast: function(votes, user, callback){
+      conn.query(`
+      INSERT INTO votes SET postId=?, userId=?, vote=?, createdAt=? ON DUPLICATE KEY UPDATE vote=?;`,[votes.post, user.id, votes.num, new Date(), votes.num],
+      function(err, results){
+        if(err){
+          callback(err);
+        }
+        else{
+          callback(null, results);
+        }
+      });
     }
   };
 };

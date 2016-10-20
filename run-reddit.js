@@ -9,7 +9,7 @@ var connection = mysql.createConnection({
 // load our API and pass it the connection
 var reddit = require('./reddit');
 var redditAPI = reddit(connection);
-
+var loginId = {id: 0, username: ""};
 
 function getNewUserInfo(){
     var newUserInfo = {};
@@ -42,13 +42,14 @@ function createNewUser(newUser){
             console.log(err);
         }
         else {
-            createPost(user);
+            loginId.id = user.id;
+            loginId.username = user.username;
+            mainMenu();
         }
     });
 }
 
-function createPost(user){
-    console.log(user);
+function createPost(){
     var postInfo = {};
     inquirer.prompt({
         type: "input",
@@ -76,7 +77,7 @@ function createPost(user){
             title: postInfo.thePost,
             url: postInfo.postUrl,
             srID: postInfo.srID,
-            userId: user.id
+            userId: loginId.id
         }, function(err, post) {
             if (err) {
                 console.log(err);
@@ -84,7 +85,8 @@ function createPost(user){
             else {
                 console.log(post);
             }
-        connection.end();
+        // connection.end();
+        mainMenu();
     });
     });
     });
@@ -93,15 +95,61 @@ function createPost(user){
 
 function showAllPosts(){
     var displayThisMany = {numPerPage:25,page:0};
-    redditAPI.getAllPosts(displayThisMany, function(err, results){
+    inquirer.prompt({
+        type: "list",
+        name: "sortType",
+        message: "How to sort?",
+        choices: [{name: "TOP", value: "TOP"},{name: "NEWEST", value: "NEWEST"},{name: "HOT", value : "HOT"},{name: "CONTROVERSIAL *not working*", value: "CONTROVERSIAL"}]
+    }).then(
+    function(answer){
+        var theQuery = "";
+        var sortString = "";
+        console.log(answer.sortType);
+        if (answer.sortType == "TOP"){
+            sortString = "ORDER BY SUM(votes.vote)";
+                        
+        }
+        else if (answer.sortType == "NEWEST"){
+            sortString =  "ORDER BY posts.createdAt DESC";
+        }
+        else if (answer.sortType == "CONTROVERSIAL"){
+            sortString = "ORDER BY (IF SUM(votes.vote) > 0 THEN (COUNT(votes.vote) * (numUpvotes / numDownvotes) : totalVotes * (numDownvotes / numUpvotes)";
+        }
+        else if (answer.sortType == "HOT"){
+            sortString = "ORDER BY (SUM(votes.vote)/posts.id)";
+        }
+        
+        theQuery = `SELECT 
+                          posts.id, 
+                          posts.title, 
+                          posts.url,
+                          posts.userId, 
+                          posts.createdAt, 
+                          posts.updatedAt, 
+                          users.username, 
+                          users.createdAt AS "usersince", 
+                          users.updatedAt AS "userupdate",
+                          subreddits.title AS "subredditName",
+                          subreddits.description AS "subredditDesc",
+                          subreddits.createdAt AS "subredditSince",
+                          subreddits.updatedAt AS "subredditUpdate",
+                          SUM(votes.vote) AS "voteScore"
+                        FROM posts
+                        JOIN users ON (posts.userId = users.id)
+                        LEFT JOIN subreddits ON (subreddits.id = posts.subreddit_id)
+                        LEFT JOIN votes ON (posts.id = votes.postid)
+                        GROUP BY posts.id ` + sortString + `
+                        LIMIT ? OFFSET ?;`;
+    redditAPI.getAllPosts(displayThisMany, theQuery, function(err, results){
         if (err){
             console.log("PROBLEMS!!",err);
         }
         else{
             console.log(results);
         }
-    
-        connection.end();
+        mainMenu();
+        // connection.end();
+    });
     });
 }
 
@@ -125,7 +173,8 @@ function showUsersPosts(){
                     console.log("no posts from this user");
                 }
             }
-            connection.end();
+            mainMenu();
+            // connection.end();
     });
     });
 }
@@ -144,7 +193,7 @@ function showSinglePost(){
         else{
             console.log(JSON.stringify(result, null, 4));
         }
-        connection.end();
+        mainMenu();
     });
     });
 }
@@ -187,12 +236,73 @@ function showAllSubs(){
                 console.log("#"+(idx+1)+": "+x.title);
             });            
         }
+        // connection.end();
+        mainMenu();
     });
 }
 
+function logUserIn(){
+    console.log("here");
+    inquirer.prompt({
+        type: "input",
+        name: "userid",
+        message: "what is your login #?"
+    }).then(
+    function(answer){
+        redditAPI.userLookup(answer.userid, function(err, data){
+            if (err){
+                console.log("username sucks", err);
+            }
+            else{
+                loginId.id = data[0].id;
+                loginId.username = data[0].username;
+                mainMenu();
+            }
+        });
+    
+    });
+}
+
+function castVote(){
+    var theVote = {};
+    inquirer.prompt({
+        type: "input",
+        name: "postVote",
+        message: "What is the ID of the vote you want to vote on?"
+    }).then(
+    function(answer){
+        theVote.post = answer.postVote;
+        inquirer.prompt({
+            type: "list",
+            name: "voteType",
+            message: "Upvote or Downvote?",
+            choices:[{name: "UP", value: 1}, {name: "DOWN", value: -1}, {name: "CANCEL", value: 0}]
+        }).then(
+        function(answer){
+            theVote.num = answer.voteType;
+            redditAPI.voteCast(theVote, loginId, function(err, data){
+                if (err){
+                    console.log("voter fraud",err);
+                }
+                else{
+                    console.log("vote cast!");
+                    mainMenu();
+                }
+            });
+        });
+    });
+}
 
 function mainMenu(){
+    if (loginId.id == 0){
+        console.log("not currently logged in");
+    }
+    else{
+        console.log("login ID: ",loginId.id, "username: ", loginId.username);
+    }
+    
     var menuChoices = [
+      {name: "LOGIN", value : "LOGIN"},
       {name: 'CREATE USER', value: 'CREATEUSER'},
       {name: 'CREATE POST', value: 'CREATEPOST'},
       {name: 'SHOW ALL POSTS', value: 'SHOWPOSTS'},
@@ -200,8 +310,11 @@ function mainMenu(){
       {name: 'SHOW ONE POST', value: 'ONEPOST'},
       {name: "NEW SUBREDDIT", value: "NEWSUB"},
       {name: "SHOW ALL SUBREDDITS", value: "SHOWALLSUBS"},
+      {name: "VOTE ON POST", value: "VOTE"},
       {name: "EXIT", value: "EXIT"}
     ];
+    
+    
     
     inquirer.prompt({
       type: 'list',
@@ -211,13 +324,21 @@ function mainMenu(){
     }).then(
       function(answers) {
         switch (answers.menu){
+            case "LOGIN":
+                logUserIn();
+                break;
             case "CREATEUSER":
                 getNewUserInfo();
                 break;
             case "CREATEPOST":
-                var thisUser = {};
-                thisUser.id = 3;
-                createPost(thisUser);
+                console.log(loginId);
+                if (loginId.id == 0){
+                    console.log("please log in or create account");
+                    mainMenu();
+                }
+                else{
+                    createPost();
+                }
                 break;
             case "SHOWPOSTS":
                 showAllPosts();
@@ -234,8 +355,18 @@ function mainMenu(){
             case "SHOWALLSUBS":
                 showAllSubs();
                 break;
+            case "VOTE":
+                if (loginId.id == 0){
+                    console.log("VOTER FRAUD! please log in or create account");
+                    mainMenu();
+                }
+                else{
+                    castVote();
+                }
+                break;
             case "EXIT":
                 console.log("You'll be back");
+                connection.end();
                 break;
         }
       }

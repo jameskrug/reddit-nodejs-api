@@ -27,7 +27,7 @@ CREATE TABLE `posts` (
 
 CREATE TABLE `subreddits` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `title` varchar(30) DEFAULT NULL,
+  `title` varchar(30) NOT NULL,
   `description` varchar(2000) DEFAULT NULL,
   `createdAt` DATETIME NOT NULL,
   `updatedAt` DATETIME NOT NULL,
@@ -41,7 +41,7 @@ CREATE TABLE `votes` (
   `vote` tinyint NOT NULL,
   `createdAt` DATETIME NOT NULL,
   `updatedAt` DATETIME NOT NULL,
-  PRIMARY KEY (`userid`, `postid`),
+  PRIMARY KEY (userid, postid),
   FOREIGN KEY (`userid`) REFERENCES users (id),
   FOREIGN KEY (`postid`) REFERENCES posts (id)
 );
