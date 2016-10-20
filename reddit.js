@@ -93,11 +93,12 @@ module.exports = function RedditAPI(conn) {
       }
       var limit = options.numPerPage || 25; // if options.numPerPage is "falsy" then use 25
       var offset = (options.page || 0) * limit;
-      
+      console.log(options);
       conn.query(`
-        SELECT id, title, url, userId, createdAt, updatedAt
+        SELECT posts.id, title, url, userId, posts.createdAt, posts.updatedAt, users.username
         FROM posts
-        ORDER BY createdAt DESC
+        JOIN users ON (posts.userId = users.id)
+        ORDER BY createdAt ASC
         LIMIT ? OFFSET ?`
         , [limit, offset],
         function(err, results) {
@@ -109,6 +110,54 @@ module.exports = function RedditAPI(conn) {
           }
         }
       );
+    },
+    getUsersPosts: function(options, callback) {
+      if (!callback) {
+        callback = options;
+        options = {};
+      }
+      var thisUser = options.userId;
+      var limit = options.numPerPage || 25; // if options.numPerPage is "falsy" then use 25
+      var offset = (options.page || 0) * limit;
+      conn.query(`
+        SELECT posts.id, title, url, userId, posts.createdAt, posts.updatedAt, users.username
+        FROM posts
+        JOIN users ON (posts.userId = users.id)
+        WHERE (users.id = ?)
+        ORDER BY createdAt ASC
+        LIMIT ? OFFSET ?`
+        , [thisUser, limit, offset],
+        function(err, results) {
+          if (err) {
+            callback(err);
+          }
+          else {
+            callback(null, results);
+          }
+        }
+      );
+    },
+    getOnePost: function(options, callback) {
+      var postId = options;
+      // var limit = options.numPerPage || 25; // if options.numPerPage is "falsy" then use 25
+      // var offset = (options.page || 0) * limit;
+      conn.query(`
+        SELECT posts.id, title, url, userId, posts.createdAt, posts.updatedAt, users.username
+        FROM posts
+        JOIN users ON (posts.userId = users.id)
+        WHERE (posts.id = ?)
+        ORDER BY createdAt ASC`
+        // LIMIT ? OFFSET ?`
+        , [postId],
+        function(err, results) {
+          if (err) {
+            callback(err);
+          }
+          else {
+            callback(null, results);
+          }
+        }
+      );
     }
-  }
-}
+  };
+};
