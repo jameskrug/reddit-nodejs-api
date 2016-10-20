@@ -59,8 +59,9 @@ module.exports = function RedditAPI(conn) {
       });
     },
     createPost: function(post, callback) {
+      console.log(post);
       conn.query(
-        'INSERT INTO posts (userId, title, url, createdAt) VALUES (?, ?, ?, ?)', [post.userId, post.title, post.url, new Date()],
+        'INSERT INTO posts (userId, title, url, subreddit_id, createdAt) VALUES (?, ?, ?, ?, ?)', [post.userId, post.title, post.url, post.srID, new Date()],
         function(err, result) {
           if (err) {
             callback(err);
@@ -85,6 +86,29 @@ module.exports = function RedditAPI(conn) {
         }
       );
     },
+    createSubreddit: function(newSub, callback) {
+      console.log(newSub);
+      conn.query(
+        `INSERT INTO subreddits (title, description, createdAt) VALUES (?, ?, ?);`, 
+        [newSub.name, newSub.desc, new Date()], function(err, result) {
+          if (err) {
+            callback(err);
+          }
+          else {
+            conn.query('SELECT title, description, createdAt FROM subreddits WHERE id = ?;',[result.insertId],
+              function(err, result) {
+                if (err) {
+                  callback(err);
+                }
+                else {
+                  callback(null, result[0]);
+                }
+              }
+            );
+          }
+        }
+      );
+    },
     getAllPosts: function(options, callback) {
       // In case we are called without an options parameter, shift all the parameters manually
       if (!callback) {
@@ -95,9 +119,23 @@ module.exports = function RedditAPI(conn) {
       var offset = (options.page || 0) * limit;
       console.log(options);
       conn.query(`
-        SELECT posts.id, title, url, userId, posts.createdAt, posts.updatedAt, users.username
+        SELECT 
+          posts.id, 
+          posts.title, 
+          posts.url,
+          posts.userId, 
+          posts.createdAt, 
+          posts.updatedAt, 
+          users.username, 
+          users.createdAt AS "usersince", 
+          users.updatedAt AS "userupdate",
+          subreddits.title AS "subredditName",
+          subreddits.description AS "subredditDesc",
+          subreddits.createdAt AS "subredditSince",
+          subreddits.updatedAt AS "subredditUpdate"
         FROM posts
         JOIN users ON (posts.userId = users.id)
+        LEFT JOIN subreddits ON (subreddits.id = posts.subreddit_id)
         ORDER BY createdAt ASC
         LIMIT ? OFFSET ?`
         , [limit, offset],
@@ -106,7 +144,10 @@ module.exports = function RedditAPI(conn) {
             callback(err);
           }
           else {
-            callback(null, results);
+             var theData = results.map(function(x){
+              return {id: x.id, title: x.title, url:x.url, createdAt:x.createdAt, updatedAt:x.updatedAt, user:{userId:x.userId, username:x.username,createdAt:x.usersince,updatedAt:x.userupdate}, subreddit: {title: x.subredditName, description: x.subredditDesc, createdAt: x.subredditSince, updatedAt: x.subredditUpdate}};
+            });
+            callback(null, theData);
           }
         }
       );
@@ -120,7 +161,7 @@ module.exports = function RedditAPI(conn) {
       var limit = options.numPerPage || 25; // if options.numPerPage is "falsy" then use 25
       var offset = (options.page || 0) * limit;
       conn.query(`
-        SELECT posts.id, title, url, userId, posts.createdAt, posts.updatedAt, users.username
+        SELECT posts.id, title, url, userId, posts.createdAt, posts.updatedAt, users.username, users.createdAt AS "usersince", users.updatedAt AS "userupdate"
         FROM posts
         JOIN users ON (posts.userId = users.id)
         WHERE (users.id = ?)
@@ -131,24 +172,43 @@ module.exports = function RedditAPI(conn) {
           if (err) {
             callback(err);
           }
-          else {
-            callback(null, results);
+           else {
+             var theData = results.map(function(x){
+              return {id: x.id, title: x.title, url:x.url, createdAt:x.createdAt, updatedAt:x.updatedAt, user:{userId:x.userId, username:x.username,createdAt:x.usersince,updatedAt:x.userupdate}};
+            });
+            callback(null, theData);
           }
         }
       );
     },
     getOnePost: function(options, callback) {
       var postId = options;
-      // var limit = options.numPerPage || 25; // if options.numPerPage is "falsy" then use 25
-      // var offset = (options.page || 0) * limit;
       conn.query(`
-        SELECT posts.id, title, url, userId, posts.createdAt, posts.updatedAt, users.username
+        SELECT posts.id, title, url, userId, posts.createdAt, posts.updatedAt, users.username, users.createdAt AS "usersince", users.updatedAt AS "userupdate"
         FROM posts
         JOIN users ON (posts.userId = users.id)
         WHERE (posts.id = ?)
         ORDER BY createdAt ASC`
         // LIMIT ? OFFSET ?`
         , [postId],
+        function(err, results) {
+          if (err) {
+            callback(err);
+          }
+          else {
+            var theData = results.map(function(x){
+              return {id: x.id, title: x.title, url:x.url, createdAt:x.createdAt, updatedAt:x.updatedAt, user:{userId:x.userId, username:x.username,createdAt:x.usersince,updatedAt:x.userupdate}};
+            });
+            callback(null, theData);
+          }
+        }
+      );
+    },
+    showAllSubs: function(callback) {
+      conn.query(`
+        SELECT title
+        FROM subreddits
+        ORDER BY createdAt ASC`,
         function(err, results) {
           if (err) {
             callback(err);

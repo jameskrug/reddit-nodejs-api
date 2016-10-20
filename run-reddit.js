@@ -48,6 +48,7 @@ function createNewUser(newUser){
 }
 
 function createPost(user){
+    console.log(user);
     var postInfo = {};
     inquirer.prompt({
         type: "input",
@@ -56,16 +57,25 @@ function createPost(user){
     }).then(
     function(answer){
         postInfo.thePost = answer.thePost;
-    inquirer.prompt({
-        type: "input",
-        name: "postUrl",
-        message: "What is the URL?",
+        inquirer.prompt({
+            type: "input",
+            name: "postUrl",
+            message: "What is the URL?",
     }).then(
     function(answer){
         postInfo.postUrl = answer.postUrl;
+        inquirer.prompt({
+            type: "input",
+            name: "srID",
+            message: "What is the subreddit ID?",
+    }).then(
+    function(answer){
+        postInfo.srID = answer.srID;
+        console.log(postInfo);
         redditAPI.createPost({
             title: postInfo.thePost,
             url: postInfo.postUrl,
+            srID: postInfo.srID,
             userId: user.id
         }, function(err, post) {
             if (err) {
@@ -78,6 +88,7 @@ function createPost(user){
     });
     });
     });
+});
 }
 
 function showAllPosts(){
@@ -87,7 +98,7 @@ function showAllPosts(){
             console.log("PROBLEMS!!",err);
         }
         else{
-            console.log(JSON.stringify(results, null, 4));
+            console.log(results);
         }
     
         connection.end();
@@ -116,7 +127,7 @@ function showUsersPosts(){
             }
             connection.end();
     });
-});
+    });
 }
 
 function showSinglePost(){
@@ -138,6 +149,48 @@ function showSinglePost(){
     });
 }
 
+function makeNewSubreddit(){
+    var newSubInfo = {};
+    inquirer.prompt({
+        type: "input",
+        name: "newSubName",
+        message: "What is the name of the new subreddit?",
+    }).then(
+    function(answer){
+        newSubInfo.name = answer.newSubName;
+        inquirer.prompt({
+            type: "input",
+            name: "newSubDesc",
+            message: "Optional description:"
+    }).then(
+    function(answer){
+        newSubInfo.desc = answer.newSubDesc;
+        redditAPI.createSubreddit(newSubInfo, function(err, data){
+            if (err){
+                console.log("dear god no", err);
+            }
+            else{
+                console.log(JSON.stringify(data, null, 4));
+            }
+        });
+    }); 
+    });
+}
+
+function showAllSubs(){
+    redditAPI.showAllSubs(function(err, data){
+        if (err){
+            console.log("not again",err);
+        }
+        else{
+            data.forEach(function(x,idx){
+                console.log("#"+(idx+1)+": "+x.title);
+            });            
+        }
+    });
+}
+
+
 function mainMenu(){
     var menuChoices = [
       {name: 'CREATE USER', value: 'CREATEUSER'},
@@ -145,6 +198,8 @@ function mainMenu(){
       {name: 'SHOW ALL POSTS', value: 'SHOWPOSTS'},
       {name: 'SHOW ALL POSTS FROM USER', value: 'SHOWUSERPOSTS'},
       {name: 'SHOW ONE POST', value: 'ONEPOST'},
+      {name: "NEW SUBREDDIT", value: "NEWSUB"},
+      {name: "SHOW ALL SUBREDDITS", value: "SHOWALLSUBS"},
       {name: "EXIT", value: "EXIT"}
     ];
     
@@ -160,8 +215,9 @@ function mainMenu(){
                 getNewUserInfo();
                 break;
             case "CREATEPOST":
-                console.log("make a post");
-                mainMenu();
+                var thisUser = {};
+                thisUser.id = 3;
+                createPost(thisUser);
                 break;
             case "SHOWPOSTS":
                 showAllPosts();
@@ -171,6 +227,12 @@ function mainMenu(){
                 break;
             case "ONEPOST":
                 showSinglePost();
+                break;
+            case "NEWSUB":
+                makeNewSubreddit();
+                break;
+            case "SHOWALLSUBS":
+                showAllSubs();
                 break;
             case "EXIT":
                 console.log("You'll be back");

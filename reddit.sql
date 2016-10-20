@@ -19,7 +19,29 @@ CREATE TABLE `posts` (
   `userId` int(11) DEFAULT NULL,
   `createdAt` DATETIME NOT NULL,
   `updatedAt` DATETIME NOT NULL,
+  `subreddit_id` INT(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `userId` (`userId`), -- why did we add this here? ask me :)
   CONSTRAINT `posts_ibfk_1` FOREIGN KEY (`userId`) REFERENCES `users` (`id`) ON DELETE SET NULL
+);
+
+CREATE TABLE `subreddits` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `title` varchar(30) DEFAULT NULL,
+  `description` varchar(2000) DEFAULT NULL,
+  `createdAt` DATETIME NOT NULL,
+  `updatedAt` DATETIME NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `title` (`title`)
+);
+
+CREATE TABLE `votes` (
+  `userid` int(11) NOT NULL,
+  `postid` int(11) NOT NULL,
+  `vote` tinyint NOT NULL,
+  `createdAt` DATETIME NOT NULL,
+  `updatedAt` DATETIME NOT NULL,
+  PRIMARY KEY (`userid`, `postid`),
+  FOREIGN KEY (`userid`) REFERENCES users (id),
+  FOREIGN KEY (`postid`) REFERENCES posts (id)
 );
