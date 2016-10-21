@@ -224,6 +224,46 @@ module.exports = function RedditAPI(conn) {
           callback(null, results);
         }
       });
+    },
+    leaveTheComment: function(theStuff, userStuff, callback){
+      conn.query(`
+      INSERT INTO comments 
+      SET userid = ?, 
+      postid = ?, 
+      parentid = ?, 
+      comment = ?,
+      createdAt = ?
+      ;`,[userStuff.id, theStuff.num, theStuff.parent, theStuff.comment, new Date()],
+      function(err, results){
+        if(err){
+          callback(err);
+        }
+        else{
+          console.log("we got your comment");
+          callback(null, results);
+        }
+      });
+    },
+    getTheComments: function(thisPost, callback){
+      conn.query(`
+      SELECT
+        comments.postid,
+        comments.parentid,
+        comments.comment,
+        posts.title,
+        posts.url,
+        posts.id
+      FROM comments
+      JOIN posts ON (comments.postid = posts.id)
+      WHERE (posts.id = ?);`, [thisPost],
+      function(err, results){
+        if (err){
+          callback(err);
+        }
+        else{
+          callback(results);
+        }
+      });
     }
   };
 };

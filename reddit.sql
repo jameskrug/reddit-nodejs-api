@@ -45,3 +45,17 @@ CREATE TABLE `votes` (
   FOREIGN KEY (`userid`) REFERENCES users (id),
   FOREIGN KEY (`postid`) REFERENCES posts (id)
 );
+
+
+CREATE TABLE `comments` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `userid` int(11) NOT NULL,
+  `postid` int(11) NOT NULL,
+  `parentid` int(11) DEFAULT NULL,
+  `comment` text(10000) NOT NULL,
+  `createdAt` DATETIME NOT NULL,
+  `updatedAt` DATETIME NOT NULL,
+  PRIMARY KEY (`ID`),
+  FOREIGN KEY (`userid`) REFERENCES users (id),
+  FOREIGN KEY (`postid`) REFERENCES posts (id)
+);

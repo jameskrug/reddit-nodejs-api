@@ -293,6 +293,68 @@ function castVote(){
     });
 }
 
+function leaveComment(){
+    var commentStuff = {};
+    inquirer.prompt({
+        type: "input",
+        name: "whichOne",
+        message: "Which post are you commenting on?"
+    }).then(
+    function(answer){
+        commentStuff.num = answer.whichOne;
+        inquirer.prompt({
+            type:"input",
+            name:"theComment",
+            message: "What is your comment?"
+        }).then(
+        function(answer){
+            commentStuff.comment = answer.theComment;
+            inquirer.prompt({
+                type: "input",
+                name: "parent",
+                message: "What is the parent number? (0 for None)"
+            }).then(
+            function(answer){
+                if(commentStuff.parent != 0){
+                    commentStuff.parent = answer.parent;
+                }
+                else{
+                    commentStuff.parent = null;
+                }
+                redditAPI.leaveTheComment(commentStuff, loginId, function (err, data){
+                    if (err){
+                        console.log("no comments here", err);
+                    }
+                    else{
+                        // console.log(data);
+                        mainMenu();
+                    }
+                });
+            });
+            
+        });
+    });
+}
+
+function getCommentsForPost(){
+    inquirer.prompt({
+        type: "input",
+        name: "whichPost",
+        message: "Comments for which post?"
+    }).then(
+    function(answer){
+        redditAPI.getTheComments(answer.whichPost, function(err, data){
+            if (err){
+                console.log("get your own comments",err);
+            }
+            else{
+                console.log(data);
+            }
+        });
+    });
+}
+
+
 function mainMenu(){
     if (loginId.id == 0){
         console.log("not currently logged in");
@@ -311,6 +373,8 @@ function mainMenu(){
       {name: "NEW SUBREDDIT", value: "NEWSUB"},
       {name: "SHOW ALL SUBREDDITS", value: "SHOWALLSUBS"},
       {name: "VOTE ON POST", value: "VOTE"},
+      {name: "CREATE COMMENT", value: "COMMENT"},
+      {name: "GET COMMENTS FOR POST", value: "GETCOMMENTS"},
       {name: "EXIT", value: "EXIT"}
     ];
     
@@ -363,6 +427,18 @@ function mainMenu(){
                 else{
                     castVote();
                 }
+                break;
+            case "COMMENT":
+                if (loginId.id == 0){
+                    console.log("please log in or create account");
+                    mainMenu();
+                }
+                else{
+                    leaveComment();
+                }
+                break;
+            case "GETCOMMENTS":
+                getCommentsForPost();
                 break;
             case "EXIT":
                 console.log("You'll be back");
