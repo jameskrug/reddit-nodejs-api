@@ -163,9 +163,24 @@ module.exports = function RedditAPI(conn) {
     getOnePost: function(options, callback) {
       var postId = options;
       conn.query(`
-        SELECT posts.id, title, url, userId, posts.createdAt, posts.updatedAt, users.username, users.createdAt AS "usersince", users.updatedAt AS "userupdate"
+        SELECT 
+          posts.id, 
+          title, 
+          url, 
+          posts.userId, 
+          posts.createdAt,
+          posts.updatedAt, 
+          users.username, 
+          users.createdAt AS "usersince", 
+          users.updatedAt AS "userupdate",
+          comments.id AS "commentid",
+          comments.userid AS "commentuserid",
+          comments.parentid AS "parentid",
+          comments.comment,
+          comments.postid
         FROM posts
         JOIN users ON (posts.userId = users.id)
+        LEFT JOIN comments ON (posts.id = comments.postid)
         WHERE (posts.id = ?)
         ORDER BY createdAt ASC`
         // LIMIT ? OFFSET ?`
@@ -176,7 +191,7 @@ module.exports = function RedditAPI(conn) {
           }
           else {
             var theData = results.map(function(x){
-              return {id: x.id, title: x.title, url:x.url, createdAt:x.createdAt, updatedAt:x.updatedAt, user:{userId:x.userId, username:x.username,createdAt:x.usersince,updatedAt:x.userupdate}};
+              return {comment: x.comment, username: x.username, postid: x.postid, commentid: x.commentid, commentuserid: x.commentuserid, parentid: x.parentid, id: x.id, title: x.title, url:x.url, createdAt:x.createdAt, updatedAt:x.updatedAt, user:{userId:x.userId, username:x.username,createdAt:x.usersince,updatedAt:x.userupdate}};
             });
             callback(null, theData);
           }
@@ -240,28 +255,33 @@ module.exports = function RedditAPI(conn) {
         }
         else{
           console.log("we got your comment");
-          callback(null, results);
+          callback(null, results[0]);
         }
       });
     },
     getTheComments: function(thisPost, callback){
       conn.query(`
       SELECT
+        comments.id AS "commentid",
         comments.postid,
         comments.parentid,
         comments.comment,
         posts.title,
         posts.url,
-        posts.id
+        posts.id,
+        users.id,
+        users.username
       FROM comments
       JOIN posts ON (comments.postid = posts.id)
-      WHERE (posts.id = ?);`, [thisPost],
+      LEFT JOIN users ON (users.id = comments.userid)
+      WHERE (posts.id = ?)
+      ORDER BY comments.parentid;`, [thisPost],
       function(err, results){
         if (err){
           callback(err);
         }
         else{
-          callback(results);
+          callback(null, results);
         }
       });
     }

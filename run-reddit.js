@@ -85,7 +85,6 @@ function createPost(){
             else {
                 console.log(post);
             }
-        // connection.end();
         mainMenu();
     });
     });
@@ -148,7 +147,6 @@ function showAllPosts(){
             console.log(results);
         }
         mainMenu();
-        // connection.end();
     });
     });
 }
@@ -174,8 +172,7 @@ function showUsersPosts(){
                 }
             }
             mainMenu();
-            // connection.end();
-    });
+        });
     });
 }
 
@@ -191,7 +188,8 @@ function showSinglePost(){
             console.log("issues", err);
         }
         else{
-            console.log(JSON.stringify(result, null, 4));
+            console.log("\n\nTITLE: ", result[0].title, "\nURL: ",result[0].url, "\nCREATED: ",result[0].createdAt, "\nLAST UPDATED: ", result[0].updatedAt, "\n",result[0].user,"\n\n");
+            indexComments(result);
         }
         mainMenu();
     });
@@ -220,6 +218,7 @@ function makeNewSubreddit(){
             }
             else{
                 console.log(JSON.stringify(data, null, 4));
+                mainMenu();
             }
         });
     }); 
@@ -236,7 +235,6 @@ function showAllSubs(){
                 console.log("#"+(idx+1)+": "+x.title);
             });            
         }
-        // connection.end();
         mainMenu();
     });
 }
@@ -326,7 +324,6 @@ function leaveComment(){
                         console.log("no comments here", err);
                     }
                     else{
-                        // console.log(data);
                         mainMenu();
                     }
                 });
@@ -334,6 +331,36 @@ function leaveComment(){
             
         });
     });
+}
+
+function indexComments(data){
+    // console.log(data);
+    var indexedComments = [];
+    data.forEach(function(x){
+        var found = false;
+        if (x.parentid == 0){
+            indexedComments.push({commentid: x.commentid, comment: x.comment, username: x.username, parentid: x.parentid, replies: []});
+        }
+        else{
+            indexedComments.forEach(function(y, idx){
+                if (y.commentid == x.parentid){
+                    indexedComments[idx].replies.push({commentid: x.commentid, comment: x.comment, username: x.username, parentid: x.parentid, replies: []});
+                    found = true;
+                }
+            });
+            if (!found){
+                for (var i = 0; i < indexedComments.length; i++){
+                    indexedComments[i].replies.forEach(function(z, idx){
+                        if (z.commentid == x.parentid){
+                            indexedComments[i].replies[idx].replies.push({commentid: x.commentid, comment: x.comment, username: x.username, parentid: x.parentid, replies: []});
+                            found = true;
+                        }
+                    });
+                }
+            }
+        }
+    });
+    console.log(JSON.stringify(indexedComments, null,4));
 }
 
 function getCommentsForPost(){
@@ -348,12 +375,12 @@ function getCommentsForPost(){
                 console.log("get your own comments",err);
             }
             else{
-                console.log(data);
+                indexComments(data);
+                mainMenu();
             }
         });
     });
 }
-
 
 function mainMenu(){
     if (loginId.id == 0){
