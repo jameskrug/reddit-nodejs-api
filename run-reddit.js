@@ -115,7 +115,7 @@ function showAllPosts(){
             sortString = "ORDER BY (IF SUM(votes.vote) > 0 THEN (COUNT(votes.vote) * (numUpvotes / numDownvotes) : totalVotes * (numDownvotes / numUpvotes)";
         }
         else if (answer.sortType == "HOT"){
-            sortString = "ORDER BY (SUM(votes.vote)/posts.id)";
+            sortString = " ORDER BY (SUM(votes.vote))/(CURRENT_TIMESTAMP - posts.createdAt) ";
         }
         
         theQuery = `SELECT 
