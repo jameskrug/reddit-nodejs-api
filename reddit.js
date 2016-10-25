@@ -230,7 +230,12 @@ module.exports = function RedditAPI(conn) {
     },
     voteCast: function(votes, user, callback){
       conn.query(`
-      INSERT INTO votes SET postId=?, userId=?, vote=?, createdAt=? ON DUPLICATE KEY UPDATE vote=?;`,[votes.post, user.id, votes.num, new Date(), votes.num],
+      INSERT INTO votes 
+      SET postId=?, 
+      userId=?, 
+      vote=?, 
+      createdAt=? 
+      ON DUPLICATE KEY UPDATE vote=?;`,[votes.post, user.id, votes.num, new Date(), votes.num],
       function(err, results){
         if(err){
           callback(err);

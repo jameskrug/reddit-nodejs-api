@@ -240,7 +240,6 @@ function showAllSubs(){
 }
 
 function logUserIn(){
-    console.log("here");
     inquirer.prompt({
         type: "input",
         name: "userid",

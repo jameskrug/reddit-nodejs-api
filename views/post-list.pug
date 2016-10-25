@@ -1,0 +1,11 @@
+extends layout.pug
+block title
+  h1
+    ="List Of Contents"
+block content  
+  ul
+    each val in posts
+      li(style = "font-size : 20px")
+        a(href = "http://"+val.url)=(val.title)
+        ul(style = "font-size : 10px")
+          ="Created By: " + val.user.username
