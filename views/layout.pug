@@ -4,6 +4,16 @@ html
     link(rel="stylesheet", href="/files/styles.css")
     meta(charset="utf-8")
     block title
-      title The Default Title
+      title List of Contents
   body
+    form(method = "POST")
+      - var btnType = 'info'
+      - var btnSize = 'lg'
+      ="sort by: "
+      input(type = "text", name = "sortType")
+      ="show this many posts: "
+      input(type = "text", name = "numOfPosts")
+      button(type = "submit")
+        ="Sort!"
+      = '\n'
     block content

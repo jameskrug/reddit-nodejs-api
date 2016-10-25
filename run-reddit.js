@@ -101,45 +101,10 @@ function showAllPosts(){
         choices: [{name: "TOP", value: "TOP"},{name: "NEWEST", value: "NEWEST"},{name: "HOT", value : "HOT"},{name: "CONTROVERSIAL *not working*", value: "CONTROVERSIAL"}]
     }).then(
     function(answer){
-        var theQuery = "";
-        var sortString = "";
         console.log(answer.sortType);
-        if (answer.sortType == "TOP"){
-            sortString = "ORDER BY SUM(votes.vote)";
-                        
-        }
-        else if (answer.sortType == "NEWEST"){
-            sortString =  "ORDER BY posts.createdAt DESC";
-        }
-        else if (answer.sortType == "CONTROVERSIAL"){
-            sortString = "ORDER BY (IF SUM(votes.vote) > 0 THEN (COUNT(votes.vote) * (numUpvotes / numDownvotes) : totalVotes * (numDownvotes / numUpvotes)";
-        }
-        else if (answer.sortType == "HOT"){
-            sortString = " ORDER BY (SUM(votes.vote))/(CURRENT_TIMESTAMP - posts.createdAt) ";
-        }
+       
         
-        theQuery = `SELECT 
-                          posts.id, 
-                          posts.title, 
-                          posts.url,
-                          posts.userId, 
-                          posts.createdAt, 
-                          posts.updatedAt, 
-                          users.username, 
-                          users.createdAt AS "usersince", 
-                          users.updatedAt AS "userupdate",
-                          subreddits.title AS "subredditName",
-                          subreddits.description AS "subredditDesc",
-                          subreddits.createdAt AS "subredditSince",
-                          subreddits.updatedAt AS "subredditUpdate",
-                          SUM(votes.vote) AS "voteScore"
-                        FROM posts
-                        JOIN users ON (posts.userId = users.id)
-                        LEFT JOIN subreddits ON (subreddits.id = posts.subreddit_id)
-                        LEFT JOIN votes ON (posts.id = votes.postid)
-                        GROUP BY posts.id ` + sortString + `
-                        LIMIT ? OFFSET ?;`;
-    redditAPI.getAllPosts(displayThisMany, theQuery, function(err, results){
+    redditAPI.getAllPosts(displayThisMany, answer.sortType, function(err, results){
         if (err){
             console.log("PROBLEMS!!",err);
         }

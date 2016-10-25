@@ -12,6 +12,7 @@ var redditAPI = reddit(connection);
 var bodyParser = require("body-parser");
 var express = require('express');
 var pug = require("pug");
+var cookieParser = require("cookie-parser");
 var app = express();
 
 
@@ -62,12 +63,18 @@ app.get("/calculator/:operation", function(req,res){
 app.set("view engine", "pug");
 
 app.get("/posts", function(req,res){
-  redditAPI.getAllPosts({numPerPage:5, page:0}, theQuery, function(err,data){
+  var listThisMany = {};
+  if (req.query.onePost > 0){
+    listThisMany = {numPerPage:1, page:0};
+  }
+  else{
+    listThisMany = {numPerPage:6, page:0};
+  }
+  redditAPI.getAllPosts(listThisMany, theQuery, function(err,data){
     if (err){
       console.log("errorz");
     }
     else{
-      console.log("going")
       res.render('post-list', {posts:data});
       // var redditData = (`
       //     <div id="contents">
@@ -100,7 +107,7 @@ app.get("/posts", function(req,res){
 });
 
 app.get("/createContent", function(req,res){
-  res.send(`<form action="/createContent" method="POST"> <!-- what is this method="POST" thing? you should know, or ask me :) -->
+  res.send(`<form action="/createContent" method="POST">
   <div>
     <input type="text" name="url" placeholder="Enter a URL to content">
   </div>
@@ -112,6 +119,7 @@ app.get("/createContent", function(req,res){
   
 });
 
+app.use(cookieParser());
 app.use(bodyParser.urlencoded({extended:false}));
 
 app.post("/createContent",function(req,res){
@@ -128,16 +136,89 @@ app.post("/createContent",function(req,res){
   });
 });
 
-
-
-// app.use("/createContent", function(req,res){
-//   console.log(bodyParser.urlencoded(req.body));
-// });
-
 app.get('/', function (req, res) {
   res.send('<h1>Hello World!xyz</h1>\n');
   console.log(req.method + ' ' + req.url);
 });
+
+app.get("/home", function (req,res){
+  var listThisMany = {numPerPage:25, page:0};
+  var sortThis = "NEWEST";
+  if (req.query.sort){
+    sortThis = req.query.sort;
+  }
+  if (req.query.posts){
+    listThisMany.numPerPage = Number(req.query.posts);
+  }
+  console.log(listThisMany);
+  redditAPI.getAllPosts(listThisMany, sortThis, function(err, data){
+    if (err){
+      console.log("homepage problems");
+    }
+    else{
+      res.render('post-list', {posts:data});
+    }
+  });
+});
+
+app.post('/home', function (req, res){
+  res.redirect("/home/?sort="+req.body.sortType+"&posts="+req.body.numOfPosts);
+});
+
+
+
+app.get("/createAccount", function(req,res){
+  res.render('create-account-page');
+});
+
+app.post('/createAccount', function (req, res){
+  var userInfo = {username : req.body.newUsername, password : req.body.newPassword};
+  redditAPI.createUser(userInfo, function(err, data){
+    if (err){
+      console.log("username sucks");
+      res.send("didn't work");
+    }
+    else{
+      redditAPI.createSession(data, function(err, result){
+        if (err){
+          console.log(err);
+        }
+        else{
+          res.cookie("SESSION",result);
+          res.redirect("/home");
+        }
+      });
+    }
+  });
+});
+
+
+
+app.get('/login', function(req,res){
+  res.render('login-account');
+});
+
+app.post('/login', function(req,res){
+  redditAPI.checkLogin(req.body.thisUsername, req.body.thisPassword, function(err, data){
+    if (err){
+      res.send(400);
+      res.send("bad password");
+      console.log(err);
+    }
+    else{
+      redditAPI.createSession(data, function(err, result){
+        if (err){
+          console.log(err);
+        }
+        else{
+          res.cookie("SESSION",result);
+          res.redirect("/home");
+        }
+      });
+    }
+  });
+});
+
 
 
 

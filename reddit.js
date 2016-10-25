@@ -1,10 +1,25 @@
 var bcrypt = require('bcrypt');
 var HASH_ROUNDS = 10;
+var secureRandom = require("secure-random");
 
 module.exports = function RedditAPI(conn) {
   return {
+    
+    
+    createSession: function(userId, callback){
+      var token = secureRandom.randomArray(100).map(code => code.toString(36)).join('');
+      conn.query('INSERT INTO sessions SET username = ?, token = ?, user_id = ?', [userId.username, token, userId.id], function(err, result) {
+          if(err) {
+            callback(err);
+          }
+          else {
+            // console.log(token);
+            callback(null, token);
+          }
+    });
+    },
+    
     createUser: function(user, callback) {
-      
       // first we have to hash the password...
       bcrypt.hash(user.password, HASH_ROUNDS, function(err, hashedPassword) {
         if (err) {
@@ -55,6 +70,29 @@ module.exports = function RedditAPI(conn) {
               }
             }
           );
+        }
+      });
+    },
+    checkLogin : function(user, pass, callback) {
+      conn.query('SELECT * FROM users WHERE username = ?', [user], function(err, result) {
+        if(err){
+          callback(err);
+        }
+        else if (result.length == 0) {
+          callback(new Error('no user of this name'));
+        }
+        else {
+          bcrypt.compare(pass, result[0].password, function(err, match) {
+            if (err){
+              callback(err);
+            }
+            else if(match == true) {
+              callback(null, result[0]);
+            }
+            else {
+              callback(new Error('bad password'));
+            }
+          });
         }
       });
     },
@@ -109,14 +147,53 @@ module.exports = function RedditAPI(conn) {
         }
       );
     },
-    getAllPosts: function(options, theQuery, callback) {
+    getAllPosts: function(options, answer, callback) {
+      var sortString = "";
       // In case we are called without an options parameter, shift all the parameters manually
+      if (answer== "TOP"){
+          sortString = "ORDER BY SUM(votes.vote) DESC";
+      }
+      else if (answer == "NEWEST"){
+          sortString =  "ORDER BY posts.createdAt DESC";
+      }
+      else if (answer == "OLDEST"){
+          sortString =  "ORDER BY posts.createdAt ASC";
+      }
+      else if (answer == "CONTROVERSIAL"){
+          sortString = "ORDER BY (IF SUM(votes.vote) > 0 THEN (COUNT(votes.vote) * (numUpvotes / numDownvotes) : totalVotes * (numDownvotes / numUpvotes)";
+      }
+      else if (answer == "HOT"){
+          sortString = " ORDER BY (SUM(votes.vote)) / (CURRENT_TIMESTAMP - posts.createdAt) ";
+      }
+     
+      var theQuery = `SELECT 
+                          posts.id, 
+                          posts.title, 
+                          posts.url,
+                          posts.userId, 
+                          posts.createdAt, 
+                          posts.updatedAt, 
+                          users.username, 
+                          users.createdAt AS "usersince", 
+                          users.updatedAt AS "userupdate",
+                          subreddits.title AS "subredditName",
+                          subreddits.description AS "subredditDesc",
+                          subreddits.createdAt AS "subredditSince",
+                          subreddits.updatedAt AS "subredditUpdate",
+                          SUM(votes.vote) AS "voteScore"
+                        FROM posts
+                        JOIN users ON (posts.userId = users.id)
+                        LEFT JOIN subreddits ON (subreddits.id = posts.subreddit_id)
+                        LEFT JOIN votes ON (posts.id = votes.postid)
+                        GROUP BY posts.id ` + sortString + `
+                        LIMIT ? OFFSET ?;`;
+      
       if (!callback) {
         callback = options;
         options = {};
       }
-      var limit = options.numPerPage || 25; // if options.numPerPage is "falsy" then use 25
-      var offset = (options.page || 0) * limit;
+      var limit = options.numPerPage; // if options.numPerPage is "falsy" then use 25
+      var offset = (options.page) * limit;
       conn.query(theQuery, [limit, offset],
         function(err, results) {
           if (err) {
