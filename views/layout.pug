@@ -6,14 +6,19 @@ html
     block title
       title List of Contents
   body
-    form(method = "POST")
-      - var btnType = 'info'
-      - var btnSize = 'lg'
-      ="sort by: "
-      input(type = "text", name = "sortType")
-      ="show this many posts: "
-      input(type = "text", name = "numOfPosts")
+    p #{login}
+    ="sort by:"
+    form(action = "/home?sort=HOT" method = post)
+      input(type="hidden" name="sort" value="HOT")
       button(type = "submit")
-        ="Sort!"
-      = '\n'
+        ="HOT"
+    form(action = "/home?sort=NEW" method = post)
+      input(type="hidden" name="sort" value="NEW")
+      button(type = "submit")
+        ="NEW"
+    form(action = "/home?sort=TOP" method = post)
+      input(type="hidden" name="sort" value="TOP")
+      button(type = "submit")
+        ="TOP"
+    = '\n'
     block content

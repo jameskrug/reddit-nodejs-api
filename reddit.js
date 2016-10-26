@@ -19,6 +19,25 @@ module.exports = function RedditAPI(conn) {
     });
     },
     
+    checkUserSession: function(token, callback){
+      conn.query(`
+      SELECT
+        users.username,
+        users.id
+      FROM users
+      LEFT JOIN sessions ON (users.id = sessions.user_id)
+      WHERE (sessions.token = ?);
+      `, [token], function(err, result){
+        if (err){
+          callback("token issues", err);
+        }
+        else{
+          console.log("result:",result);
+          callback(null,result);
+        }
+      });
+    },
+    
     createUser: function(user, callback) {
       // first we have to hash the password...
       bcrypt.hash(user.password, HASH_ROUNDS, function(err, hashedPassword) {
@@ -73,6 +92,7 @@ module.exports = function RedditAPI(conn) {
         }
       });
     },
+    
     checkLogin : function(user, pass, callback) {
       conn.query('SELECT * FROM users WHERE username = ?', [user], function(err, result) {
         if(err){
@@ -96,6 +116,7 @@ module.exports = function RedditAPI(conn) {
         }
       });
     },
+    
     createPost: function(post, callback) {
       console.log(post);
       conn.query(
@@ -124,6 +145,7 @@ module.exports = function RedditAPI(conn) {
         }
       );
     },
+    
     createSubreddit: function(newSub, callback) {
       console.log(newSub);
       conn.query(
@@ -147,13 +169,14 @@ module.exports = function RedditAPI(conn) {
         }
       );
     },
+    
     getAllPosts: function(options, answer, callback) {
       var sortString = "";
       // In case we are called without an options parameter, shift all the parameters manually
       if (answer== "TOP"){
           sortString = "ORDER BY SUM(votes.vote) DESC";
       }
-      else if (answer == "NEWEST"){
+      else if (answer == "NEW"){
           sortString =  "ORDER BY posts.createdAt DESC";
       }
       else if (answer == "OLDEST"){
@@ -208,6 +231,7 @@ module.exports = function RedditAPI(conn) {
         }
       );
     },
+    
     getUsersPosts: function(options, callback) {
       if (!callback) {
         callback = options;
@@ -237,6 +261,7 @@ module.exports = function RedditAPI(conn) {
         }
       );
     },
+    
     getOnePost: function(options, callback) {
       var postId = options;
       conn.query(`
@@ -275,11 +300,12 @@ module.exports = function RedditAPI(conn) {
         }
       );
     },
+    
     showAllSubs: function(callback) {
       conn.query(`
         SELECT title
         FROM subreddits
-        ORDER BY createdAt ASC`,
+        ORDER BY createdAt ASC;`,
         function(err, results) {
           if (err) {
             callback(err);
@@ -290,6 +316,33 @@ module.exports = function RedditAPI(conn) {
         }
       );
     },
+    
+    showSubreddit: function(thisSub, callback){
+      conn.query(`
+      SELECT
+        posts.id,
+        posts.title,
+        posts.url,
+        posts.userId,
+        posts.subreddit_id,
+        subreddits.title AS "subredditTitle",
+        subreddits.description,
+        users.username
+      FROM posts
+      LEFT JOIN subreddits ON (subreddits.id = posts.subreddit_id)
+      LEFT JOIN users ON (users.id = posts.userId)
+      WHERE subreddits.title = ?;
+      `, [thisSub], 
+      function(err, data){
+        if (err){
+          callback(err);
+        }
+        else{
+          callback(null, data);
+        }
+      });
+    },
+    
     userLookup: function(thisUser, callback) {
       conn.query(`
         SELECT id, username
@@ -305,6 +358,7 @@ module.exports = function RedditAPI(conn) {
         }
       );
     },
+    
     voteCast: function(votes, user, callback){
       conn.query(`
       INSERT INTO votes 
@@ -322,6 +376,7 @@ module.exports = function RedditAPI(conn) {
         }
       });
     },
+    
     leaveTheComment: function(theStuff, userStuff, callback){
       conn.query(`
       INSERT INTO comments 
@@ -341,6 +396,7 @@ module.exports = function RedditAPI(conn) {
         }
       });
     },
+    
     getTheComments: function(thisPost, callback){
       conn.query(`
       SELECT

@@ -1,0 +1,7 @@
+title List Of Subreddits
+h1 
+    ="subreddits"
+ol
+    each val in subreddits
+        li
+            a(href = '/r/'+val.title)=(val.title)
