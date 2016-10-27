@@ -1,4 +1,5 @@
-p #{login}
+link(rel="stylesheet", href="/files/styles.css")
+p(class = "login") #{login}
 h1
   ="Create Post"
 form(action="/createContent", method="POST")
@@ -6,4 +7,6 @@ form(action="/createContent", method="POST")
     input(type="text", name="url", placeholder="Enter a URL to content")
   div
     input(type="text", name="title", placeholder="Enter the title of your content")
+  div
+    input(type="text", name="srID", placeholder="Entre subreddit ID")
   button(type="submit") Create!

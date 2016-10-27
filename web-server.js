@@ -15,10 +15,11 @@ var pug = require("pug");
 var cookieParser = require("cookie-parser");
 var app = express();
 
+app.use('/files', express.static('static_files'));
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({extended:false}));
 app.use(checkLoginToken);
-
+app.set("view engine", "pug");
 
 function checkLoginToken(req,res,next){
   if (req.cookies.SESSION){
@@ -36,9 +37,6 @@ function checkLoginToken(req,res,next){
     next();
   }
 }
-
-
-
 
 // app.get('/hello', function(req,res){
 //   var x = "";
@@ -79,39 +77,47 @@ function checkLoginToken(req,res,next){
 //   res.send(JSON.stringify(theOperation, null, 4));
 // });
 
-app.set("view engine", "pug");
-
 app.get("/posts", function(req,res){
   var listThisMany = {};
   if (req.query.onePost > 0){
     listThisMany = {numPerPage:1, page:0};
+    req.query.sort = "NEW";
   }
   else{
     listThisMany = {numPerPage:25, page:0};
   }
-  redditAPI.getAllPosts(listThisMany, "NEW", function(err,data){
+  redditAPI.getAllPosts(listThisMany, req.query.sort, function(err,data){
     if (err){
       console.log("errorz");
     }
     else{
-      res.render('post-list', {posts:data, username: "logged in as: "+ req.loggedInAs.username});
+      if (req.loggedInAs){
+        res.render('post-list', {posts:data, login: "logged in as: "+ req.loggedInAs.username});
+      }
+      else{
+        res.render('post-list', {posts:data, login: "not logged in"});
+      }
     }
   });
 });
 
 app.get("/createContent", function(req,res){
-  res.render('create-content', {login: "logged in as: "+ req.loggedInAs.username});
+  if (!req.loggedInAs){
+    res.send("must be logged in");
+    res.redirect("/home");
+  }
+  else{
+    res.render('create-content', {login: "logged in as: "+ req.loggedInAs.username});
+  }
 });
-
 
 app.post("/createContent",function(req,res){
   if (!req.loggedInAs){
     res.send("must be logged in");
+    res.redirect("/home");
   }
   else{
-    var postInfo = {userId: req.loggedInAs.id, srID : 4};
-    postInfo.title = req.body.title;
-    postInfo.url = req.body.url;
+    var postInfo = {userId: req.loggedInAs.id, srID : req.body.srID, title : req.body.title, url : req.body.url};
     redditAPI.createPost(postInfo, function(err, data){
       if (err){
         console.log("errrrrror");
@@ -130,7 +136,6 @@ app.get('/', function (req, res) {
 app.get("/home", function (req,res){
   var listThisMany = {numPerPage:25, page:0};
   var sortThis = "NEW";
-  console.log(req.body.numOfPosts);
   if (req.query.sort){
     sortThis = req.query.sort;
   }
@@ -142,7 +147,12 @@ app.get("/home", function (req,res){
       console.log("homepage problems");
     }
     else{
-      res.render('post-list', {posts:data, login: "logged in as: "+ req.loggedInAs.username});
+      if (req.loggedInAs){
+        res.render('post-list', {posts:data, login: "logged in as: "+ req.loggedInAs.username, theTitle: "Homepage", theDescription: "Home to all of Reddit"});
+      }
+      else{
+        res.render('post-list', {posts:data, login: "not logged in"});
+      }
     }
   });
 });
@@ -153,23 +163,48 @@ app.get("/subreddits", function(req,res){
       console.log("subreddit error", err);
     }
     else{
-      res.render('subreddit-list', {subreddits: data, username: req.loggedInAs.username});
+      if (req.loggedInAs){
+        res.render('subreddit-list', {subreddits:data, login: "logged in as: "+ req.loggedInAs.username});
+      }
+      else{
+        res.render('subreddit-list', {subreddits:data, login: "not logged in"});
+      }
     }
   });
 });
 
 app.get("/r/:subreddit", function(req,res){
-  console.log(req.params.subreddit);
-  redditAPI.showSubreddit(req.params.subreddit, function(err, data){
+
+  redditAPI.showSubreddit(req.params.subreddit, req.query.sort, function(err, data){
     if (err){
       console.log("subreddit woes", err);
     }
     else{
-      res.render('subreddit-posts', {posts: data, theTitle: req.params.subreddit, theDescription: data[0].description});
+      if (data.length == 0){
+        res.send("there are no posts in this subreddit");
+      }
+      else{
+        res.render('subreddit-posts', {login: (req.loggedInAs ? ("logged in as: " + req.loggedInAs.username) :  ("not logged in")), posts: data, theTitle: "subreddit: "+req.params.subreddit, theDescription: "description: " + data[0].description});
+      }        
     }
   });
 });
 
+app.get("/newSub", function(req,res){
+  res.render("new-subreddit");
+});
+
+app.post("/newSub",function(req,res){
+  redditAPI.createSubreddit({name:req.body.subTitle, desc: req.body.subDesc}, function(err,data){
+    if (err){
+      console.log("no new sub", err);
+    }
+    else{
+      console.log(data);
+      res.redirect("/subreddits");
+    }
+  });
+});
 
 app.get("/createAccount", function(req,res){
   res.render('create-account-page');
@@ -196,7 +231,64 @@ app.post('/createAccount', function (req, res){
   });
 });
 
+app.get("/fullpost/:postid", function(req,res){
+  redditAPI.getTheComments(req.params.postid, function(err, data){
+    if (err){
+      console.log("no comments for you", err);
+    }
+    else{
+      var indexedComments = [];
+      data.forEach(function(x){
+          var found = false;
+          if (x.parentid == 0){
+              indexedComments.push({commentid: x.commentid, comment: x.comment, username: x.username, parentid: x.parentid, replies: []});
+          }
+          else{
+              indexedComments.forEach(function(y, idx){
+                  if (y.commentid == x.parentid){
+                      indexedComments[idx].replies.push({commentid: x.commentid, comment: x.comment, username: x.username, parentid: x.parentid, replies: []});
+                      found = true;
+                  }
+              });
+              if (!found){
+                  for (var i = 0; i < indexedComments.length; i++){
+                      indexedComments[i].replies.forEach(function(z, idx){
+                          if (z.commentid == x.parentid){
+                              indexedComments[i].replies[idx].replies.push({commentid: x.commentid, comment: x.comment, username: x.username, parentid: x.parentid, replies: []});
+                              found = true;
+                          }
+                      });
+                  }
+              }
+          }
+      });
+      res.render('comment', {comments: indexedComments, postid : req.params.postid});
+    }
+  });
+});
 
+app.get('/replyThis/:postid/:parentid', function(req, res){
+  if(!req.loggedInAs){
+    res.send("must be logged in to comment");
+  }
+  else{
+    console.log(req.params.postid);
+    res.render('leave-comment', {postid: req.params.postid, parentid: req.params.parentid});
+  }
+});
+    
+app.post('/replyThis', function(req,res){
+  console.log(req.loggedInAs);
+  var postInfo = {num : req.body.postid, parent: req.body.parentid, comment: req.body.comment};
+  redditAPI.leaveTheComment(postInfo,{id:req.loggedInAs.id}, function(err, result){
+    if (err){
+      console.log(err);
+    }
+    else{
+      res.redirect('/fullpost/'+req.body.postid);
+    }
+  });
+});
 
 app.get('/login', function(req,res){
   res.render('login-account');
@@ -234,12 +326,25 @@ app.get('/vote', function(req,res,next){
         console.log(err);
       }
       else{
-        res.redirect("/home");
+        // next()
+        res.redirect(req.headers.referer);
       }
     });
   }
 });
 
+app.get('/logout', function(req,res){
+  req.loggedInAs = null;
+  res.clearCookie("SESSION", req.cookies.SESSION);
+  redditAPI.removeSession(req.cookies.SESSION, function(err, result){
+    if (err){
+      console.log(err);
+    }
+    else{
+      res.redirect("/home");
+    }
+  });
+});
 
 
 

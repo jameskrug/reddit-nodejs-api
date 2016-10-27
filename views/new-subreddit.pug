@@ -1,0 +1,9 @@
+p #{login}
+h1
+  ="Create New Subreddit"
+form(action="/newSub", method="POST")
+  div
+    input(type="text", name="subTitle", placeholder="Name the new Subreddit")
+  div
+    input(type="text", name="subDesc", placeholder="Describe the Subreddit")
+  button(type="submit") Create!

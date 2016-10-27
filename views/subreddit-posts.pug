@@ -3,22 +3,24 @@ block title
   title List Of Contents
 block content  
     h1 subreddit: #{theTitle}
-    p description: #{theDescription}
+    p(class = "descriptiveness") #{theDescription}
     ol
         each val in posts
             li(style = "font-size : 20px")
                 a(href = "http://"+val.url)=(val.title)
+                div(class = "commentLink")
+                    a(href = "/fullpost/"+val.id)="Comments"
                 ul(style = "font-size : 10px")
                     ="Created By: " + val.username
                     ="\n"
                     ="Vote Score: " + val.voteScore
                     form(action = "/vote" method = post)
-                    input(type="hidden" name="vote" value="1")
-                    input(type="hidden" name = "postID" value = val.id)
-                    button(type = "submit")
-                        ="upvote this"
+                        input(type="hidden" name="vote" value="1")
+                        input(type="hidden" name = "postID" value = val.id)
+                        button(type = "submit", class = "votebutton")
+                            ="upvote this"
                     form(action = "/vote" method = post)
-                    input(type="hidden" name="vote" value="-1")
-                    input(type="hidden" name = "postID" value = val.id)
-                    button(type = "submit")
-                        ="downvote this"
+                        input(type="hidden" name="vote" value="-1")
+                        input(type="hidden" name = "postID" value = val.id)
+                        button(type = "submit", class = "votebutton")
+                            ="downvote this"

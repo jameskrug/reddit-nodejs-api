@@ -5,7 +5,18 @@ var secureRandom = require("secure-random");
 module.exports = function RedditAPI(conn) {
   return {
     
-    
+    removeSession: function(token, callback){
+      conn.query(`
+        DELETE FROM sessions
+        WHERE token = ?`,[token],function(err,result){
+          if(err){
+            callback("still have cookie" ,err);
+          }
+          else{
+            callback(null,result);
+          }
+        })
+    },
     createSession: function(userId, callback){
       var token = secureRandom.randomArray(100).map(code => code.toString(36)).join('');
       conn.query('INSERT INTO sessions SET username = ?, token = ?, user_id = ?', [userId.username, token, userId.id], function(err, result) {
@@ -32,7 +43,6 @@ module.exports = function RedditAPI(conn) {
           callback("token issues", err);
         }
         else{
-          console.log("result:",result);
           callback(null,result);
         }
       });
@@ -169,6 +179,7 @@ module.exports = function RedditAPI(conn) {
         }
       );
     },
+  
     
     getAllPosts: function(options, answer, callback) {
       var sortString = "";
@@ -303,7 +314,9 @@ module.exports = function RedditAPI(conn) {
     
     showAllSubs: function(callback) {
       conn.query(`
-        SELECT title
+        SELECT 
+          title,
+          description
         FROM subreddits
         ORDER BY createdAt ASC;`,
         function(err, results) {
@@ -317,7 +330,25 @@ module.exports = function RedditAPI(conn) {
       );
     },
     
-    showSubreddit: function(thisSub, callback){
+    showSubreddit: function(thisSub, answer, callback){
+      var sortString = "";
+      // In case we are called without an options parameter, shift all the parameters manually
+      if (answer== "TOP"){
+          sortString = "ORDER BY SUM(votes.vote) DESC";
+      }
+      else if (answer == "NEW"){
+          sortString =  "ORDER BY posts.createdAt DESC";
+      }
+      else if (answer == "OLDEST"){
+          sortString =  "ORDER BY posts.createdAt ASC";
+      }
+      else if (answer == "CONTROVERSIAL"){
+          sortString = "ORDER BY (IF SUM(votes.vote) > 0 THEN (COUNT(votes.vote) * (numUpvotes / numDownvotes) : totalVotes * (numDownvotes / numUpvotes)";
+      }
+      else if (answer == "HOT"){
+          sortString = " ORDER BY (SUM(votes.vote)) / (CURRENT_TIMESTAMP - posts.createdAt) ";
+      }
+      
       conn.query(`
       SELECT
         posts.id,
@@ -327,12 +358,17 @@ module.exports = function RedditAPI(conn) {
         posts.subreddit_id,
         subreddits.title AS "subredditTitle",
         subreddits.description,
-        users.username
+        users.username,
+        SUM(votes.vote) AS "voteScore"
       FROM posts
       LEFT JOIN subreddits ON (subreddits.id = posts.subreddit_id)
       LEFT JOIN users ON (users.id = posts.userId)
-      WHERE subreddits.title = ?;
-      `, [thisSub], 
+      LEFT JOIN votes ON (votes.postid = posts.id)
+      WHERE subreddits.title = ?
+      GROUP BY posts.id ` + sortString + `;`
+      , [thisSub], 
+      
+      // 
       function(err, data){
         if (err){
           callback(err);

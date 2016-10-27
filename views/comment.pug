@@ -1,0 +1,28 @@
+link(rel="stylesheet", href="/files/styles.css")
+div(class = "navigation")
+    form(action = "/home")
+        button(type = "submit")
+            ="Home"
+h1
+  ="Comments"
+div(class = "leavecomment")
+    form(action = "/replyThis/" + postid + "/0/")
+        button(type = "submit")
+            ="Leave Comment"
+ol
+    each val in comments
+        li(class = "parentComment")
+            =val.comment
+        p(class = "commentAuthor")=val.username
+            a(href="/replyThis/"+postid+"/"+val.commentid class = "replyComment")="Reply"
+        ol
+            each subval in val.replies
+                li(class = "replyone")
+                    =subval.comment
+                p(class = "commentAuthor")=subval.username
+                 a(href="/replyThis/"+postid+"/"+subval.commentid class = "replyComment")="Reply"
+                ol
+                    each subsubval in subval.replies
+                        li(class = "replytwo")
+                            =subsubval.comment
+                        p(class = "commentAuthor")=subsubval.username

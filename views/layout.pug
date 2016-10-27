@@ -6,19 +6,46 @@ html
     block title
       title List of Contents
   body
-    p #{login}
-    ="sort by:"
-    form(action = "/home?sort=HOT" method = post)
-      input(type="hidden" name="sort" value="HOT")
-      button(type = "submit")
-        ="HOT"
-    form(action = "/home?sort=NEW" method = post)
-      input(type="hidden" name="sort" value="NEW")
-      button(type = "submit")
-        ="NEW"
-    form(action = "/home?sort=TOP" method = post)
-      input(type="hidden" name="sort" value="TOP")
-      button(type = "submit")
-        ="TOP"
-    = '\n'
+    div(class = "login")
+      p #{login}
+    div(class = "navigation")
+      form(action = "/home")
+        button(type = "submit")
+          ="Home"
+      form(action = "/login")
+        button(type = "submit")
+          ="login"
+      form(action = "/createAccount")
+        button(type = "submit")
+          ="Create Account"
+      form(action = "/subreddits")
+        button(type = "submit")
+          ="List Subreddits"    
+      form(action = "/posts")
+        button(type = "submit")
+          ="posts"
+      form(action = "/createContent")
+        button(type = "submit")
+          ="Create Content"
+      form(action = "/logout")
+        button(type = "submit")
+          ="logout"
     block content
+    div
+      ="sort by:"
+      form(action = "?sort=HOT" method = post)
+        input(type="hidden" name="sort" value="HOT")
+        button(type = "submit")
+          ="HOT"
+      form(action = "?sort=NEW" method = post)
+        input(type="hidden" name="sort" value="NEW")
+        button(type = "submit")
+          ="NEW"
+      form(action = "?sort=TOP" method = post)
+        input(type="hidden" name="sort" value="TOP")
+        button(type = "submit")
+          ="TOP"
+      form(action = "?sort=OLDEST" method = post)
+        input(type="hidden" name="sort" value="OLDEST")
+        button(type = "submit")
+          ="OLDEST"

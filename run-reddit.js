@@ -101,9 +101,6 @@ function showAllPosts(){
         choices: [{name: "TOP", value: "TOP"},{name: "NEWEST", value: "NEWEST"},{name: "HOT", value : "HOT"},{name: "CONTROVERSIAL *not working*", value: "CONTROVERSIAL"}]
     }).then(
     function(answer){
-        console.log(answer.sortType);
-       
-        
     redditAPI.getAllPosts(displayThisMany, answer.sortType, function(err, results){
         if (err){
             console.log("PROBLEMS!!",err);
