@@ -1,29 +1,14 @@
-link(rel="stylesheet", href="/files/styles.css")
-title List Of Subreddits
-div(class = "login")
-    p #{login}
-div
-  ="navigate:"
-  form(action = "/home")
-    button(type = "submit")
-        ="Home"
-  form(action = "/createAccount")
-    button(type = "submit")
-      ="Create Account"
-  form(action = "/subreddits")
-    button(type = "submit")
-      ="List Subreddits"    
-  form(action = "/posts")
-    button(type = "submit")
-      ="posts"
-h1 
-    ="subreddits"
-div
-    form(action = "/newSub")
-        button(type = "submit")
-            ="Create New Subreddit"
-ol
-    each val in subreddits
-        li(class = "subredditList")
-            a(href = '/r/'+val.title)=(val.title)
-        p(class = "subdescription")=" - "+ val.description
+extends layout.pug
+block nameofpage
+  h1
+    ="list of subdreddits"
+block content
+  div(class= "leavecomment")
+      form(action = "/newSub")
+          button(type = "submit" class = "leavecommentbutton")
+              ="Create New Subreddit"
+  ol(class = "leftalign")
+      each val in subreddits
+          li(class = "subredditList")
+              a(href = '/r/'+val.title)=(val.title)
+          p(class = "subdescription")=" - "+ val.description

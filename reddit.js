@@ -17,6 +17,7 @@ module.exports = function RedditAPI(conn) {
           }
         })
     },
+    
     createSession: function(userId, callback){
       var token = secureRandom.randomArray(100).map(code => code.toString(36)).join('');
       conn.query('INSERT INTO sessions SET username = ?, token = ?, user_id = ?', [userId.username, token, userId.id], function(err, result) {
@@ -444,18 +445,39 @@ module.exports = function RedditAPI(conn) {
         posts.url,
         posts.id,
         users.id,
-        users.username
+        users.username,
+        SUM(votes.vote) AS "voteScore"
       FROM comments
       JOIN posts ON (comments.postid = posts.id)
       LEFT JOIN users ON (users.id = comments.userid)
+      LEFT JOIN votes ON (posts.id = votes.postid)
       WHERE (posts.id = ?)
+      GROUP BY comments.id
       ORDER BY comments.parentid;`, [thisPost],
       function(err, results){
         if (err){
           callback(err);
         }
         else{
-          callback(null, results);
+          conn.query(`
+            SELECT 
+              posts.title,
+              posts.url,
+              users.username,
+              SUM(votes.vote) AS "voteScore"
+            FROM posts
+            LEFT JOIN users ON (users.id = posts.userId)
+            LEFT JOIN votes ON (posts.id = votes.postid)
+            WHERE (posts.id = ?);`, [thisPost], 
+          function(err, postInfo){
+            if (err){
+              console.log("its all so meaningless",err);
+            }
+            else{
+              var post = {title: postInfo[0].title, url: postInfo[0].url, username: postInfo[0].username, voteScore: postInfo[0].voteScore};
+              callback(null, results, post);
+            }
+         });
         }
       });
     }

@@ -1,32 +1,109 @@
 body {
-    background-color: #1a693c;
+    background-color: #177F42;
 }
 
+
+
 h1 {
-  color: yellow;
+  color: #0EB2AF;
   text-align: center;
+  margin-top: 50px;
+}
+
+.postinsubreddit{
+  color:black;
+  background-color: red;
+}
+
+.leavecomment{
+  text-align: center;
+}
+
+.leftalign{
+  margin-left: 130px;
+}
+
+.loginout{
+  white-space: nowrap;
+  background-color: black;
+  font-size: 12px;
+  padding: 2px 7px 2px 7px;
+  /*float: right;*/
 }
 
 .login{
     left: 0px;
     top: 0px;
+    height: 26px;
     position : fixed;
     width: 100%;
     background-color: black;
     color: white;
-    text-align: center;
+    text-align: right;
+    display: inline-block;
 }
 
-.commentAuthor{
-  color: green;
+.leavecommentbutton{
+  width: 200px;
+  text-align: center;
+  -webkit-border-radius: 20;
+  -moz-border-radius: 20;
+  border-radius: 20px;
+  font-family: Arial;
+  color: #ffffff;
   font-size: 12px;
+  background: #07128a;
+  padding: 10px 20px 10px 20px;
+  text-decoration: none;
+}
+
+.leavecommentbutton:hover{
+  background: #41647a;
+}
+
+.sorting{
+  text-align: center;
+  margin-top: 20px;
+  
+}
+
+.commentsection{
+  margin-left:110px;
+}
+
+.logininfo{
+  margin-left: 130px;
+}
+
+.sortingbutton{
+  background: #7F1E17
+}
+
+
+.commentAuthor{
+  color: black;
+  font-size: 12px;
+}
+
+.postlist{
+  margin-top: 50px;
+  margin-left: 120px;
+  margin-bottom: 200px;
 }
 
 .navigation{
     top:40px;
-    width: 100%;
-    background-color: black;
-    position : fixed;
+    /*width: 100%;*/
+    background-color: #0B4021;
+    /*position : fixed;*/
+    /*margin : 0 auto;*/
+    /*text-align: center;*/
+    list-style-type: none;
+    margin: 0;
+    width: 120px;
+    height: 100%; /* Full height */
+    position: fixed; /* Make it stick, even on scroll */
+    overflow: auto; /* Enable scrolling if the sidenav has too much content */
 }
 
 .commentLink{
@@ -39,27 +116,32 @@ h1 {
   
 }
 
+.onepost{
+  font-size: 20px;
+  font-weight: inherit;
+  text-align: center;  
+}
+
+.onepostdetails{
+  font-size: 16px;
+  text-align: center;
+}
+
 .subdescription{
     font-size: 14px;
     font-style: italic;
 }
 
 button {
-  background: #1a693c;
-  background-image: -webkit-linear-gradient(top, #3498db, #2980b9);
-  background-image: -moz-linear-gradient(top, #3498db, #2980b9);
-  background-image: -ms-linear-gradient(top, #3498db, #2980b9);
-  background-image: -o-linear-gradient(top, #3498db, #2980b9);
-  background-image: linear-gradient(to bottom, #3498db, #2980b9);
-  -webkit-border-radius: 9;
-  -moz-border-radius: 9;
+  background: #8C3C52;
   text-shadow: 2px 1px 3px #666666;
   font-family: Courier New;
   color: #ffffff;
   font-size: 15px;
-  padding: 5px 10px 5px 10px;
+  
   text-decoration: none;
   margin: 2px;
+  width: 110px;
 }
 
 button:hover {
@@ -72,7 +154,7 @@ button:hover {
   text-decoration: none;
 }
 
-form {
+form{
     display: inline-block;
     /*float: inherit;*/
 }

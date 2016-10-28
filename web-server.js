@@ -28,7 +28,8 @@ function checkLoginToken(req,res,next){
         console.log("erererer");
       }
       else if (data){
-        req.loggedInAs = data[0];  
+        req.loggedInAs = data[0];
+        res.locals.user = data[0];
       }
       next();
     });
@@ -87,16 +88,12 @@ app.get("/posts", function(req,res){
     listThisMany = {numPerPage:25, page:0};
   }
   redditAPI.getAllPosts(listThisMany, req.query.sort, function(err,data){
+    console.log(data)
     if (err){
       console.log("errorz");
     }
     else{
-      if (req.loggedInAs){
-        res.render('post-list', {posts:data, login: "logged in as: "+ req.loggedInAs.username});
-      }
-      else{
-        res.render('post-list', {posts:data, login: "not logged in"});
-      }
+      res.render('post-list', {needsSorting : true, posts:data});
     }
   });
 });
@@ -107,7 +104,7 @@ app.get("/createContent", function(req,res){
     res.redirect("/home");
   }
   else{
-    res.render('create-content', {login: "logged in as: "+ req.loggedInAs.username});
+    res.render('create-content', {gotSrId: req.query.srID});
   }
 });
 
@@ -117,7 +114,7 @@ app.post("/createContent",function(req,res){
     res.redirect("/home");
   }
   else{
-    var postInfo = {userId: req.loggedInAs.id, srID : req.body.srID, title : req.body.title, url : req.body.url};
+    var postInfo = {userId: req.loggedInAs.id, srID : req.body.gotSrId, title : req.body.title, url : req.body.url};
     redditAPI.createPost(postInfo, function(err, data){
       if (err){
         console.log("errrrrror");
@@ -148,10 +145,10 @@ app.get("/home", function (req,res){
     }
     else{
       if (req.loggedInAs){
-        res.render('post-list', {posts:data, login: "logged in as: "+ req.loggedInAs.username, theTitle: "Homepage", theDescription: "Home to all of Reddit"});
+        res.render('post-list', {needsSorting : true, posts:data, login: "logged in as: "+ req.loggedInAs.username, theTitle: "Homepage", theDescription: "Home to all of Reddit"});
       }
       else{
-        res.render('post-list', {posts:data, login: "not logged in"});
+        res.render('post-list', {needsSorting : true, posts:data, login: "not logged in", theTitle: "Homepage", theDescription: "Home to all of Reddit"});
       }
     }
   });
@@ -184,7 +181,7 @@ app.get("/r/:subreddit", function(req,res){
         res.send("there are no posts in this subreddit");
       }
       else{
-        res.render('subreddit-posts', {login: (req.loggedInAs ? ("logged in as: " + req.loggedInAs.username) :  ("not logged in")), posts: data, theTitle: "subreddit: "+req.params.subreddit, theDescription: "description: " + data[0].description});
+        res.render('subreddit-posts', {needsSorting : true, theSrId: data[0].subreddit_id, posts: data, theTitle: "subreddit: "+req.params.subreddit, theDescription: "description: " + data[0].description});
       }        
     }
   });
@@ -232,10 +229,11 @@ app.post('/createAccount', function (req, res){
 });
 
 app.get("/fullpost/:postid", function(req,res){
-  redditAPI.getTheComments(req.params.postid, function(err, data){
+  redditAPI.getTheComments(req.params.postid, function(err, data, postInfo){
     if (err){
       console.log("no comments for you", err);
     }
+    
     else{
       var indexedComments = [];
       data.forEach(function(x){
@@ -262,7 +260,7 @@ app.get("/fullpost/:postid", function(req,res){
               }
           }
       });
-      res.render('comment', {comments: indexedComments, postid : req.params.postid});
+      res.render('comment', {postDetails: postInfo, comments: indexedComments, postid : req.params.postid});
     }
   });
 });
@@ -291,7 +289,7 @@ app.post('/replyThis', function(req,res){
 });
 
 app.get('/login', function(req,res){
-  res.render('login-account');
+  res.render('login-account', {needsSorting:false});
 });
 
 app.post('/login', function(req,res){
@@ -326,7 +324,6 @@ app.get('/vote', function(req,res,next){
         console.log(err);
       }
       else{
-        // next()
         res.redirect(req.headers.referer);
       }
     });
@@ -359,5 +356,3 @@ var server = app.listen(process.env.PORT, process.env.IP, function () {
 
   console.log('Example app listening at http://%s:%s', host, port);
 });
-
-

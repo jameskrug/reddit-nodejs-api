@@ -1,10 +1,15 @@
 extends layout.pug
 block title
-  title List Of Contents
-block content  
+  title Subreddit Posts
+block title  
     h1 subreddit: #{theTitle}
     p(class = "descriptiveness") #{theDescription}
-    ol
+block content
+    form(action = "/createContent" method = post class = "leftalign")
+          input(type="hidden" name="srID" value=theSrId)
+          button(type = "submit" class = "postinsubreddit")
+            ="Post in this Subreddit"
+    ol(class = "postlist")
         each val in posts
             li(style = "font-size : 20px")
                 a(href = "http://"+val.url)=(val.title)

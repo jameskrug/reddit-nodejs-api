@@ -7,45 +7,50 @@ html
       title List of Contents
   body
     div(class = "login")
-      p #{login}
+      if user
+        ="logged in as:  "+ user.username + "       "
+        form(action = "/logout")
+          button(type = "submit" class = "loginout")
+            ="logout"
+      else
+        ="not logged in                   "
+        form(action = "/login")
+          button(type = "submit" class = "loginout")
+            ="login"
+        form(action = "/createAccount")
+          button(type = "submit" class = "loginout")
+            ="Create Account"
     div(class = "navigation")
       form(action = "/home")
         button(type = "submit")
           ="Home"
-      form(action = "/login")
-        button(type = "submit")
-          ="login"
-      form(action = "/createAccount")
-        button(type = "submit")
-          ="Create Account"
       form(action = "/subreddits")
         button(type = "submit")
           ="List Subreddits"    
       form(action = "/posts")
         button(type = "submit")
-          ="posts"
+          ="Posts"
       form(action = "/createContent")
         button(type = "submit")
           ="Create Content"
-      form(action = "/logout")
-        button(type = "submit")
-          ="logout"
+      
+    block nameofpage
+    if needsSorting
+      div(class = "sorting")
+        form(action = "?sort=HOT" method = post)
+          input(type="hidden" name="sort" value="HOT")
+          button(type = "submit" class = "sortingbutton")
+            ="HOT"
+        form(action = "?sort=NEW" method = post)
+          input(type="hidden" name="sort" value="NEW")
+          button(type = "submit" class = "sortingbutton")
+            ="NEW"
+        form(action = "?sort=TOP" method = post)
+          input(type="hidden" name="sort" value="TOP")
+          button(type = "submit" class = "sortingbutton")
+            ="TOP"
+        form(action = "?sort=OLDEST" method = post)
+          input(type="hidden" name="sort" value="OLDEST")
+          button(type = "submit" class = "sortingbutton")
+            ="OLDEST" 
     block content
-    div
-      ="sort by:"
-      form(action = "?sort=HOT" method = post)
-        input(type="hidden" name="sort" value="HOT")
-        button(type = "submit")
-          ="HOT"
-      form(action = "?sort=NEW" method = post)
-        input(type="hidden" name="sort" value="NEW")
-        button(type = "submit")
-          ="NEW"
-      form(action = "?sort=TOP" method = post)
-        input(type="hidden" name="sort" value="TOP")
-        button(type = "submit")
-          ="TOP"
-      form(action = "?sort=OLDEST" method = post)
-        input(type="hidden" name="sort" value="OLDEST")
-        button(type = "submit")
-          ="OLDEST"

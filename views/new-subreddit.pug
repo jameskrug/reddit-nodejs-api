@@ -1,9 +1,14 @@
-p #{login}
-h1
-  ="Create New Subreddit"
-form(action="/newSub", method="POST")
-  div
-    input(type="text", name="subTitle", placeholder="Name the new Subreddit")
-  div
-    input(type="text", name="subDesc", placeholder="Describe the Subreddit")
-  button(type="submit") Create!
+extends layout.pug
+block nameofpage
+  h1
+    ="Create New Subreddit"
+block content
+  form(action="/newSub", method="POST", class = "logininfo")
+    p
+      ="Name of new Subreddit"
+      input(type="text", name="subTitle", placeholder="Name the new Subreddit")
+    p
+      ="description of new Subreddit"
+      input(type="text", name="subDesc", placeholder="Describe the Subreddit")
+    p
+      button(type="submit") Create!

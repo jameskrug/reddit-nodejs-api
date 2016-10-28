@@ -1,12 +1,25 @@
-link(rel="stylesheet", href="/files/styles.css")
-p(class = "login") #{login}
-h1
-  ="Create Post"
-form(action="/createContent", method="POST")
-  div
-    input(type="text", name="url", placeholder="Enter a URL to content")
-  div
-    input(type="text", name="title", placeholder="Enter the title of your content")
-  div
-    input(type="text", name="srID", placeholder="Entre subreddit ID")
-  button(type="submit") Create!
+extends layout.pug
+block nameofpage
+  h1
+    ="Create Post"
+block content
+  form(action="/createContent", method="POST" class = "leftalign")
+    div
+      p
+        ="What is the url?"
+      p
+        input(type="text", name="url", placeholder="Enter a URL to content")
+    div
+      p
+        ="What is the Title?"
+      p
+        input(type="text", name="title", placeholder="Enter the title of your content")
+    if !gotSrId
+      div
+        p 
+          ="What is the subreddit id?"
+        p
+          input(type="text", name="gotSrId", placeholder="Entre subreddit ID")
+    else
+      input(type = "hidden", name = "gotSrId", value = gotSrId)
+    button(type="submit") Create!
