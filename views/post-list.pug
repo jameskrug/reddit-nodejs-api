@@ -15,16 +15,16 @@ block content
         ul
           p
             ="Created By: " + val.user.username
-          p
+          p(class = "showScore" data-val = val.voteScore)
             ="Vote Score: " + val.voteScore
-          div
-            form(action = "/vote" method = post)
-              input(type="hidden" name="vote" value="1")
-              input(type="hidden" name = "postID" value = val.id)
-              button(type = "submit" class = "votebutton upvote")
+          div(class="bothvotebuttons")
+            // form(action = "/vote" method = post)
+            //   input(type="hidden" name="vote" value="1")
+            //   input(type="hidden" name = "postID" value = val.id)
+            button(type = "button" class = "votebutton upvote" data-alreadyvoted = val.thisUserVoted data-postid = val.id value = "+1")
                 ="+1"
-            form(action = "/vote" method = post)
-              input(type="hidden" name="vote" value="-1")
-              input(type="hidden" name = "postID" value = val.id)
-              button(type = "submit" class = "votebutton downvote")
+            // form(action = "/vote" method = post)
+            //   input(type="hidden" name="vote" value="-1")
+            //   input(type="hidden" name = "postID" value = val.id)
+            button(type = "button" class = "votebutton downvote" data-alreadyvoted = val.thisUserVoted data-postid = val.id value = "-1")
                 ="-1"

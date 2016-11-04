@@ -180,9 +180,8 @@ module.exports = function RedditAPI(conn) {
         }
       );
     },
-  
     
-    getAllPosts: function(options, answer, callback) {
+    getAllPosts: function(options, answer, userid, callback) {
       var sortString = "";
       // In case we are called without an options parameter, shift all the parameters manually
       if (answer== "TOP"){
@@ -222,7 +221,6 @@ module.exports = function RedditAPI(conn) {
                         LEFT JOIN votes ON (posts.id = votes.postid)
                         GROUP BY posts.id ` + sortString + `
                         LIMIT ? OFFSET ?;`;
-      
       if (!callback) {
         callback = options;
         options = {};
@@ -235,10 +233,36 @@ module.exports = function RedditAPI(conn) {
             callback(err);
           }
           else {
-             var theData = results.map(function(x){
+            var theData = results.map(function(x){
               return {id: x.id, title: x.title, url:x.url, createdAt:x.createdAt, updatedAt:x.updatedAt, user:{userId:x.userId, username:x.username,createdAt:x.usersince,updatedAt:x.userupdate}, subreddit: {title: x.subredditName, description: x.subredditDesc, createdAt: x.subredditSince, updatedAt: x.subredditUpdate},voteScore: x.voteScore};
             });
-            callback(null, theData);
+            conn.query(`
+              SELECT 
+                posts.id, 
+                votes.vote
+              FROM posts
+              JOIN votes ON (posts.id = votes.postid)
+              where votes.userid = ?
+              group by posts.id;
+              `, [userid], function(err, votesFromUser){
+                if (err){
+                  console.log("ya no chance of that working");
+                }
+                else{
+                  theData.forEach(function(x, idx){
+                    votesFromUser.forEach(function(y){
+                      if (x.id == y.id){
+                        theData[idx].thisUserVoted = y.vote;
+                      }
+                    });
+                    if (!theData[idx].thisUserVoted){
+                      theData[idx].thisUserVoted = 0;
+                    }
+                  });
+                  callback(null, theData);
+                }
+              });
+            
           }
         }
       );
@@ -406,6 +430,7 @@ module.exports = function RedditAPI(conn) {
       ON DUPLICATE KEY UPDATE vote=?;`,[votes.post, user.id, votes.num, new Date(), votes.num],
       function(err, results){
         if(err){
+          console.log("ERRRRPRPR LOOK HERE");
           callback(err);
         }
         else{

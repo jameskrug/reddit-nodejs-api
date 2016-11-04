@@ -89,7 +89,6 @@ app.get("/posts", function(req,res){
     listThisMany = {numPerPage:25, page:0};
   }
   redditAPI.getAllPosts(listThisMany, req.query.sort, function(err,data){
-    console.log(data)
     if (err){
       console.log("errorz");
     }
@@ -139,9 +138,9 @@ app.get("/home", function (req,res){
   if (req.query.numOfPosts){
     listThisMany.numPerPage = Number(req.query.numOfPosts);
   }
-  redditAPI.getAllPosts(listThisMany, sortThis, function(err, data){
+  redditAPI.getAllPosts(listThisMany, sortThis, req.loggedInAs? req.loggedInAs.id : 0, function(err, data){
     if (err){
-      console.log("homepage problems");
+      console.log("homepage problems", err);
     }
     else{
       res.render('post-list', {needsSorting : true, posts:data, theTitle: "Homepage", theDescription: "Home to all of Reddit"});
@@ -321,22 +320,34 @@ app.post('/login', function(req,res){
   });
 });
 
-app.get('/vote', function(req,res,next){
+app.post('/vote', function(req,res,next){
   if(!req.loggedInAs){
     res.render("must-be-logged-in");
   }
   else{
     var theVote = {num: req.query.vote, post: req.query.postID};
+    console.log(theVote, req.loggedInAs);
     redditAPI.voteCast(theVote, req.loggedInAs, function(err, result){
       if (err){
         console.log(err);
       }
       else{
-        res.redirect(req.headers.referer);
+        console.log(result);
       }
     });
   }
 });
+
+// app.post('/vote', function(req,res){
+//   redditAPI.voteCast(theVote, req.loggedInAs, function(err, result){
+//       if (err){
+//         console.log(err);
+//       }
+//       else{
+//         res.redirect(req.headers.referer);
+//       }
+//     });
+// });
 
 app.get('/logout', function(req,res){
   req.loggedInAs = null;
