@@ -1,4 +1,5 @@
 var mysql = require('mysql');
+var request = require("request");
 var connection = mysql.createConnection({
   host     : 'localhost',
   user     : 'jameskrug',
@@ -93,15 +94,14 @@ app.get("/posts", function(req,res){
       console.log("errorz");
     }
     else{
-      res.render('post-list', {needsSorting : true, posts:data});
+      res.render('post-list', {needsSorting : true, posts:data, theTitle : "Posts", theDescription: "Some posts for you to view"});
     }
   });
 });
 
 app.get("/createContent", function(req,res){
   if (!req.loggedInAs){
-    res.send("must be logged in");
-    res.redirect("/home");
+    res.render("must-be-logged-in");
   }
   else{
     res.render('create-content', {gotSrId: req.query.srID});
@@ -144,12 +144,7 @@ app.get("/home", function (req,res){
       console.log("homepage problems");
     }
     else{
-      if (req.loggedInAs){
-        res.render('post-list', {needsSorting : true, posts:data, login: "logged in as: "+ req.loggedInAs.username, theTitle: "Homepage", theDescription: "Home to all of Reddit"});
-      }
-      else{
-        res.render('post-list', {needsSorting : true, posts:data, login: "not logged in", theTitle: "Homepage", theDescription: "Home to all of Reddit"});
-      }
+      res.render('post-list', {needsSorting : true, posts:data, theTitle: "Homepage", theDescription: "Home to all of Reddit"});
     }
   });
 });
@@ -160,12 +155,7 @@ app.get("/subreddits", function(req,res){
       console.log("subreddit error", err);
     }
     else{
-      if (req.loggedInAs){
-        res.render('subreddit-list', {subreddits:data, login: "logged in as: "+ req.loggedInAs.username});
-      }
-      else{
-        res.render('subreddit-list', {subreddits:data, login: "not logged in"});
-      }
+      res.render('subreddit-list', {subreddits:data});
     }
   });
 });
@@ -181,7 +171,12 @@ app.get("/r/:subreddit", function(req,res){
         res.send("there are no posts in this subreddit");
       }
       else{
-        res.render('subreddit-posts', {needsSorting : true, theSrId: data[0].subreddit_id, posts: data, theTitle: "subreddit: "+req.params.subreddit, theDescription: "description: " + data[0].description});
+        data.forEach(function(x, idx){
+          data[idx].user = {};
+          data[idx].user.username = x.username;
+        });
+        // data.user.username = data.username;
+        res.render('post-list', {needsSorting : true, theSrId: data[0].subreddit_id, posts: data, theTitle: req.params.subreddit, theDescription: "description: " + data[0].description});
       }        
     }
   });
@@ -288,6 +283,19 @@ app.post('/replyThis', function(req,res){
   });
 });
 
+app.get('/suggestTitle', function(req,res){
+  request(req.query.url, function(err, data){
+    if (err){
+      console.log(err);
+    }
+    else{
+      var stringData = JSON.stringify(data);
+      var suggestTitle = stringData.split('<title>').pop().split('</title>').shift();
+      res.render('create-content', {suggest: suggestTitle});
+    }
+  });
+});
+
 app.get('/login', function(req,res){
   res.render('login-account', {needsSorting:false});
 });
@@ -315,7 +323,7 @@ app.post('/login', function(req,res){
 
 app.get('/vote', function(req,res,next){
   if(!req.loggedInAs){
-    res.send("must be logged in to vote");
+    res.render("must-be-logged-in");
   }
   else{
     var theVote = {num: req.query.vote, post: req.query.postID};

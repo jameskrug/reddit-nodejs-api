@@ -3,23 +3,25 @@ block nameofpage
   h1
     ="Create Post"
 block content
-  form(action="/createContent", method="POST" class = "leftalign")
+  form(action="/createContent", method="POST" class = "logininfo centrethis")
+    
+    p
+      ="What is the url?"
     div
-      p
-        ="What is the url?"
-      p
-        input(type="text", name="url", placeholder="Enter a URL to content")
-    div
-      p
-        ="What is the Title?"
-      p
+      input(type="text", name="url", placeholder="Enter a URL to content")
+      button(type="button" name="suggest" class = "suggestname") Suggest!
+    p
+      ="What is the Title?"
+    p
+      if suggest
+        input(type="text", name="title", value = suggest)
+      else
         input(type="text", name="title", placeholder="Enter the title of your content")
     if !gotSrId
-      div
-        p 
-          ="What is the subreddit id?"
-        p
-          input(type="text", name="gotSrId", placeholder="Entre subreddit ID")
+      p 
+        ="What is the subreddit id?"
+      p
+        input(type="text", name="gotSrId", placeholder="Entre subreddit ID")
     else
       input(type = "hidden", name = "gotSrId", value = gotSrId)
-    button(type="submit") Create!
+    button(class = "createcontentbutton" type="submit") Create!

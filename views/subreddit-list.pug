@@ -3,11 +3,10 @@ block nameofpage
   h1
     ="list of subdreddits"
 block content
-  div(class= "leavecomment")
-      form(action = "/newSub")
-          button(type = "submit" class = "leavecommentbutton")
-              ="Create New Subreddit"
-  ol(class = "leftalign")
+  form(class= "center" action = "/newSub")
+    button(type = "submit" action = "/newSub" class = "leavecommentbutton")
+        ="Create New Subreddit"
+  ol
       each val in subreddits
           li(class = "subredditList")
               a(href = '/r/'+val.title)=(val.title)

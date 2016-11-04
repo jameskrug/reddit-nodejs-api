@@ -1,7 +1,7 @@
 extends layout.pug
 block title
   title Subreddit Posts
-block title  
+block nameofpage
     h1 subreddit: #{theTitle}
     p(class = "descriptiveness") #{theDescription}
 block content
@@ -13,7 +13,7 @@ block content
         each val in posts
             li(style = "font-size : 20px")
                 a(href = "http://"+val.url)=(val.title)
-                div(class = "commentLink")
+                p(class = "commentLink")
                     a(href = "/fullpost/"+val.id)="Comments"
                 ul(style = "font-size : 10px")
                     ="Created By: " + val.username
@@ -23,9 +23,9 @@ block content
                         input(type="hidden" name="vote" value="1")
                         input(type="hidden" name = "postID" value = val.id)
                         button(type = "submit", class = "votebutton")
-                            ="upvote this"
+                            ="+1"
                     form(action = "/vote" method = post)
                         input(type="hidden" name="vote" value="-1")
                         input(type="hidden" name = "postID" value = val.id)
                         button(type = "submit", class = "votebutton")
-                            ="downvote this"
+                            ="-1"

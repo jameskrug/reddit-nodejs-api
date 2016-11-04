@@ -6,7 +6,7 @@ html
     block title
       title List of Contents
   body
-    div(class = "login")
+    nav(class = "login")
       if user
         ="logged in as:  "+ user.username + "       "
         form(action = "/logout")
@@ -20,37 +20,41 @@ html
         form(action = "/createAccount")
           button(type = "submit" class = "loginout")
             ="Create Account"
-    div(class = "navigation")
-      form(action = "/home")
-        button(type = "submit")
-          ="Home"
-      form(action = "/subreddits")
-        button(type = "submit")
-          ="List Subreddits"    
-      form(action = "/posts")
-        button(type = "submit")
-          ="Posts"
-      form(action = "/createContent")
-        button(type = "submit")
-          ="Create Content"
-      
-    block nameofpage
-    if needsSorting
-      div(class = "sorting")
-        form(action = "?sort=HOT" method = post)
-          input(type="hidden" name="sort" value="HOT")
-          button(type = "submit" class = "sortingbutton")
-            ="HOT"
-        form(action = "?sort=NEW" method = post)
-          input(type="hidden" name="sort" value="NEW")
-          button(type = "submit" class = "sortingbutton")
-            ="NEW"
-        form(action = "?sort=TOP" method = post)
-          input(type="hidden" name="sort" value="TOP")
-          button(type = "submit" class = "sortingbutton")
-            ="TOP"
-        form(action = "?sort=OLDEST" method = post)
-          input(type="hidden" name="sort" value="OLDEST")
-          button(type = "submit" class = "sortingbutton")
-            ="OLDEST" 
-    block content
+    nav(class = "navigation") 
+      div(class = "divnav")
+        form(action = "/home")
+          button(type = "submit")
+            ="Home"
+        form(action = "/subreddits")
+          button(type = "submit")
+            ="List Subreddits"    
+        form(action = "/posts")
+          button(type = "submit")
+            ="Posts"
+        form(action = "/createContent")
+          button(type = "submit")
+            ="Create Content"
+    div(class = "mainpage")
+      block nameofpage
+      if needsSorting
+        nav(class = "sorting")
+          form(action = "?sort=HOT" method = post)
+            input(type="hidden" name="sort" value="HOT")
+            button(type = "submit" class = "sortingbutton")
+              ="HOT"
+          form(action = "?sort=NEW" method = post)
+            input(type="hidden" name="sort" value="NEW")
+            button(type = "submit" class = "sortingbutton")
+              ="NEW"
+          form(action = "?sort=TOP" method = post)
+            input(type="hidden" name="sort" value="TOP")
+            button(type = "submit" class = "sortingbutton")
+              ="TOP"
+          form(class = "sortoldest" action = "?sort=OLDEST" method = post)
+            input(type="hidden" name="sort" value="OLDEST")
+            button(type = "submit" class = "sortingbutton")
+              ="OLDEST" 
+      block content
+    script(src="https://code.jquery.com/jquery-3.1.1.js")
+    script(src="https://code.jquery.com/jquery-migrate-3.0.0.js")
+    script(src="files/app.js")

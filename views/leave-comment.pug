@@ -2,8 +2,7 @@ link(rel="stylesheet", href="/files/styles.css")
 h1
   ="Leave Comment"
 form(action="/replyThis/", method="POST")
-  div
-    input(type="hidden" name = "postid" value = postid)
-    input(type="hidden" name = "parentid" value = parentid)
-    input(type="text", name="comment", placeholder="Your Comment")
-    button(type="submit") Create!
+  input(type="hidden" name = "postid" value = postid)
+  input(type="hidden" name = "parentid" value = parentid)
+  input(type="text", name="comment", placeholder="Your Comment")
+  button(type="submit") Create!

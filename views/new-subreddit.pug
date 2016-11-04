@@ -3,12 +3,14 @@ block nameofpage
   h1
     ="Create New Subreddit"
 block content
-  form(action="/newSub", method="POST", class = "logininfo")
+  form(action="/newSub", method="POST", class = "newsubreddit")
     p
-      ="Name of new Subreddit"
+      ="Name of new Subreddit:"
+    p
       input(type="text", name="subTitle", placeholder="Name the new Subreddit")
     p
-      ="description of new Subreddit"
+      ="description of new Subreddit:"
+    p
       input(type="text", name="subDesc", placeholder="Describe the Subreddit")
     p
       button(type="submit") Create!

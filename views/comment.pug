@@ -5,6 +5,8 @@ block nameofpage
 block content
     div(class = "onepost")
         a(href = "http://"+postDetails.url)=(postDetails.title)
+        p(class = "oneposturl")
+            =postDetails.url
         p(class = "onepostdetails")
             ="Created By: " + postDetails.username
             ="\n"
@@ -15,18 +17,21 @@ block content
                 ="Leave Comment"
     ol(class = "commentsection")
         each val in comments
-            li(class = "parentComment")
-                =val.comment
-            p(class = "commentAuthor")="Author: "+val.username
-                a(href="/replyThis/"+postid+"/"+val.commentid class = "replyComment")="Reply"
+            div(class = "onecomment")
+                li(class = "parentComment")
+                    =val.comment
+                p(class = "commentAuthor")="Author: "+val.username
+                    a(href="/replyThis/"+postid+"/"+val.commentid class = "replyComment")="Reply"
             ol
                 each subval in val.replies
-                    li(class = "replyone")
-                        =subval.comment
-                    p(class = "commentAuthor")="Author: "+subval.username
-                     a(href="/replyThis/"+postid+"/"+subval.commentid class = "replyComment")="Reply"
+                    div(class = "onecomment")
+                        li(class = "replyone")
+                            =subval.comment
+                        p(class = "commentAuthor")="Author: "+subval.username
+                         a(href="/replyThis/"+postid+"/"+subval.commentid class = "replyComment")="Reply"
                     ol
                         each subsubval in subval.replies
-                            li(class = "replytwo")
-                                =subsubval.comment
-                            p(class = "commentAuthor")="Author: "+subsubval.username
+                            div(class = "onecomment")
+                                li(class = "replytwo")
+                                    =subsubval.comment
+                                p(class = "commentAuthor")="Author: "+subsubval.username

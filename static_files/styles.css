@@ -1,5 +1,14 @@
+html{
+	box-sizing:border-box;
+}
+*,*::before, *::after{
+	box-sizing: inherit;
+}
+
+
 body {
     background-color: #177F42;
+    margin:0;
 }
 
 
@@ -7,21 +16,39 @@ body {
 h1 {
   color: #0EB2AF;
   text-align: center;
-  margin-top: 50px;
+  padding-top: 50px;
+  margin-top: 26px;
+  font-size:9vw;
+  width:100%;
+}
+
+a {
+  text-decoration: none;
+  font-size: 5vw;
+  width: 100%;
+}
+
+.mainpage{
+  width:100%;
+}
+
+.onecomment{
+  border-bottom-style: dashed;
+  border-width: 1px;
 }
 
 .postinsubreddit{
   color:black;
   background-color: red;
+  width: 300px;
+  margin-top: 50px;
 }
 
-.leavecomment{
+.notloggedin{
   text-align: center;
+  color:yellow;
 }
 
-.leftalign{
-  margin-left: 130px;
-}
 
 .loginout{
   white-space: nowrap;
@@ -34,13 +61,21 @@ h1 {
 .login{
     left: 0px;
     top: 0px;
-    height: 26px;
+    height: 9vw;
     position : fixed;
     width: 100%;
     background-color: black;
     color: white;
     text-align: right;
     display: inline-block;
+}
+
+.center{
+  margin: 0 10vw;;
+}
+
+.leavecomment{
+  margin-left: 4vw;
 }
 
 .leavecommentbutton{
@@ -53,7 +88,6 @@ h1 {
   color: #ffffff;
   font-size: 12px;
   background: #07128a;
-  padding: 10px 20px 10px 20px;
   text-decoration: none;
 }
 
@@ -67,13 +101,24 @@ h1 {
   
 }
 
-.commentsection{
-  margin-left:110px;
+.eachpost{
+   padding-bottom: 1em;
+   margin-bottom: 1em;
+   border-bottom-style: dashed;
+   border-bottom-width: 1px;
+   display: flex;
+   flex-wrap: wrap;
+   
 }
 
-.logininfo{
-  margin-left: 130px;
+.sortoldest{
+  display:none;
 }
+
+.commentsection{
+  margin-left:4vw;
+}
+
 
 .sortingbutton{
   background: #7F1E17
@@ -87,27 +132,67 @@ h1 {
 
 .postlist{
   margin-top: 50px;
-  margin-left: 120px;
   margin-bottom: 200px;
 }
 
 .navigation{
-    top:40px;
-    /*width: 100%;*/
+  
+    /* top: 40px; */
+    /* width: 100%; */
     background-color: #0B4021;
+    /* position: fixed; */
+    /* margin: 0 auto; */
+    /* text-align: center; */
+    list-style-type: none;
+    margin-top: 9vw;
+    width: 100%;
+    /* height: 100%; */
+    /* position: fixed; */
+    overflow: auto;
+    /*top:40px;*/
+    /*width: 100%;*/
+    
+    
+    /*for later use*/
+    
+    /*background-color: #0B4021;*/
     /*position : fixed;*/
     /*margin : 0 auto;*/
     /*text-align: center;*/
-    list-style-type: none;
-    margin: 0;
-    width: 120px;
-    height: 100%; /* Full height */
-    position: fixed; /* Make it stick, even on scroll */
-    overflow: auto; /* Enable scrolling if the sidenav has too much content */
+    /*list-style-type: none;*/
+    /*margin: 0;*/
+    /*width: 15%;*/
+    
+    /*position: fixed;
+    height:100%;
+    overflow: auto; */
+}
+
+.navigation form {
+  width: 25%;
+}
+
+.navigation form button{
+  width:90%;
+  height:3em;
+}
+
+.divnav{
+  display:flex;
+  padding: 0.5em 0
+}
+
+
+.showcommentlink{
+  justify-content: center;
+  align-items: center;
+  width: 35%;
+  text-align: center;
+  margin: auto;
 }
 
 .commentLink{
-  font-size: 12px;
+  font-size: 1.2em;
   color: yellow;
 }
 
@@ -116,20 +201,63 @@ h1 {
   
 }
 
-.onepost{
+.onepost {
   font-size: 20px;
   font-weight: inherit;
   text-align: center;  
 }
 
+
+.eachpost ul{
+  max-width: 65%;
+  font-size: 1em;
+  text-align: right;
+  padding-right: 3px;
+}
+
+.eachpost ul p {
+  margin:4px;
+  
+}
+
 .onepostdetails{
-  font-size: 16px;
-  text-align: center;
+    color: aquamarine;
+    font-size: 3vw;
+    text-align: center;
+}
+
+.oneposturl{
+  color: #771818;
+  text-decoration: underline;
 }
 
 .subdescription{
-    font-size: 14px;
+    padding-left: 2em;
+    font-size: 1em;
+    font-variant: small-caps;
     font-style: italic;
+}
+
+.newsubreddit p{
+  text-align: center;
+  font-size: 5vw;
+  font-variant: small-caps;
+  font-weight: 600;
+}
+
+.logininfo p {
+  text-align: center;
+  font-size: 5vw;
+  font-variant: small-caps;
+  font-weight: 600;
+}
+
+.logininfo{
+  display:block;
+}
+
+.newsubreddit{
+  display:block;
 }
 
 button {
@@ -137,11 +265,12 @@ button {
   text-shadow: 2px 1px 3px #666666;
   font-family: Courier New;
   color: #ffffff;
-  font-size: 15px;
-  
+  font-size: 3vw;
+  height:8vw;
   text-decoration: none;
   margin: 2px;
   width: 110px;
+  cursor: pointer;
 }
 
 button:hover {
@@ -156,6 +285,7 @@ button:hover {
 
 form{
     display: inline-block;
+    font-size: 4vh;
     /*float: inherit;*/
 }
 
@@ -165,12 +295,15 @@ form{
   text-shadow: 0px 0px 0px #666666;
   border-radius: 0px;
   font-family: Arial;
-  color: #4c9c24;
-  font-size: 11px;
-  background: #f5f5f5;
+  color: white;
+  font-size: 1.2em;
+  background: black;
   padding: 5px 6px 5px 6px;
   border: solid #781616 2px;
   text-decoration: none;
+  width: 2em;
+  height: 2em;
+  cursor: pointer;
 }
 
 .votebutton:hover {
@@ -196,4 +329,95 @@ form{
   letter-spacing: 2px;
   word-spacing: 2px;
   background-color: #1a693c;
+}
+
+input{
+  font-size: 1em;
+}
+
+.centrethis{
+  text-align: center;
+}
+
+.replyComment{
+  font-size: 4vw;
+}
+
+
+@media only screen and (min-width: 641px){
+  body{
+    display:flex;
+    flex-wrap:wrap;
+  }
+  h1{
+    font-size:3em;
+  }
+  .mainpage{
+    width:80%;
+    margin-left: 18%
+  }
+  .sortingbutton{
+    height: 4vh;
+  }
+  .navigation{
+    margin-top: 2em;
+    position : fixed;
+    text-align: center;
+    list-style-type: none;
+    width: 18%;
+    position: fixed;
+    height:100%;
+    overflow: auto;
+  }
+  .divnav{
+    display:block;
+  }
+  .navigation form{
+    width:100%;
+  }
+  button{
+    font-size:16px;
+  }
+  .login{
+    height:2em;
+  }
+  .login button{
+    height:2em;
+  }
+  .sortoldest{
+    display: inline;
+  }
+  a{
+    font-size: 4vh;
+  }
+  .showcommentlink{
+    justify-content: center;
+    align-items: center;
+    width: 50%;
+     text-align: left; 
+     margin: 0; 
+  }
+  .eachpost{
+    display: list-item; 
+  }
+  .eachpost ul{
+    text-align: left;
+    padding:0;
+  }
+  form {
+    font-size: 1em;
+  }
+  .onepostdetails{
+    font-size: 3vh;
+  }
+  button{
+    height:30px;
+  }
+  .replyComment {
+    font-size: 3vh;
+  }
+  .logininfo p {
+    font-size: 1em;
+      
+  }
 }
