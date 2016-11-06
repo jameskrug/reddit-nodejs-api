@@ -88,7 +88,7 @@ app.get("/posts", function(req,res){
   else{
     listThisMany = {numPerPage:25, page:0};
   }
-  redditAPI.getAllPosts(listThisMany, req.query.sort, function(err,data){
+  redditAPI.getAllPosts(listThisMany, req.query.sort, req.loggedInAs? req.loggedInAs.id : 0, function(err,data){
     if (err){
       console.log("errorz");
     }
@@ -103,7 +103,8 @@ app.get("/createContent", function(req,res){
     res.render("must-be-logged-in");
   }
   else{
-    res.render('create-content', {gotSrId: req.query.srID});
+    var previousUrl = "Enter a URL to content";
+    res.render('create-content', {gotSrId: req.query.srID, previousUrl: previousUrl});
   }
 });
 
@@ -283,6 +284,7 @@ app.post('/replyThis', function(req,res){
 });
 
 app.get('/suggestTitle', function(req,res){
+  var previousUrl = req.query.url;
   request(req.query.url, function(err, data){
     if (err){
       console.log(err);
@@ -290,7 +292,7 @@ app.get('/suggestTitle', function(req,res){
     else{
       var stringData = JSON.stringify(data);
       var suggestTitle = stringData.split('<title>').pop().split('</title>').shift();
-      res.render('create-content', {suggest: suggestTitle});
+      res.render('create-content', {suggest: suggestTitle, previousUrl: previousUrl});
     }
   });
 });
@@ -361,6 +363,19 @@ app.get('/logout', function(req,res){
     }
   });
 });
+
+app.get("/getSuggestion", function(req,res){
+  redditAPI.suggestsub(req.query.query, function(err, suggestion){
+    if(err){
+      console.log("no suggesting", err)
+    }
+    else{
+      console.log(suggestion)
+      res.json(suggestion);
+    }
+  })
+  // console.log(req)
+})
 
 
 

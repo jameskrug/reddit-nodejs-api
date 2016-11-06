@@ -75,4 +75,13 @@ $(".suggestname").on("click", function(e){
 $(".votebutton").on("click", function(e){
     console.log("you clicked a vote button", $(this).val(), $(this).data("postid"));
     $.post('/vote?vote='+$(this).val()+"&postID="+$(this).data("postid"));
-})
+});
+
+
+$("#autocomplete").autocomplete({
+    serviceUrl: "/getSuggestion",
+    onSelect: function(suggestions){
+        console.log("sugesting")
+        console.log(suggestions);
+    }
+});

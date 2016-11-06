@@ -1,4 +1,6 @@
 extends layout.pug
+block title
+  
 block nameofpage
   h1
     ="Create Post"
@@ -8,7 +10,7 @@ block content
     p
       ="What is the url?"
     div
-      input(type="text", name="url", placeholder="Enter a URL to content")
+      input(type="text", name="url", value = previousUrl)
       button(type="button" name="suggest" class = "suggestname") Suggest!
     p
       ="What is the Title?"
@@ -19,9 +21,9 @@ block content
         input(type="text", name="title", placeholder="Enter the title of your content")
     if !gotSrId
       p 
-        ="What is the subreddit id?"
+        ="What is the subreddit name?"
       p
-        input(type="text", name="gotSrId", placeholder="Entre subreddit ID")
+        input(type="text", name="gotSrId", id = "autocomplete", placeholder="Entre subreddit ID")
     else
       input(type = "hidden", name = "gotSrId", value = gotSrId)
     button(class = "createcontentbutton" type="submit") Create!

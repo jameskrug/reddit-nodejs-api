@@ -505,6 +505,25 @@ module.exports = function RedditAPI(conn) {
          });
         }
       });
+    },
+    
+    suggestsub: function(letters, callback){
+      letters = letters + "%";
+      conn.query(`
+        SELECT
+          title AS "value",
+          id AS "data"
+        FROM subreddits
+        WHERE title LIKE ?;
+        `, [letters],
+        function(err, results){
+          if (err){
+            callback("problem with suggest query",err);
+          }
+          else{
+            callback(err, results);
+          }
+        });
     }
   };
 };
