@@ -370,8 +370,14 @@ app.get("/getSuggestion", function(req,res){
       console.log("no suggesting", err)
     }
     else{
+      console.log("in web server")
       console.log(suggestion)
-      res.json(suggestion);
+      var viewSuggestions = {
+        query: "Unit",
+        suggestions: suggestion
+}
+      console.log("view", viewSuggestions)
+      res.json(viewSuggestions);
     }
   })
   // console.log(req)

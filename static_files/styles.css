@@ -28,6 +28,13 @@ a {
   width: 100%;
 }
 
+.autocomplete-suggestions { 
+  border: 1px solid #999; 
+  background: #FFF; 
+  overflow: auto; 
+  
+}
+
 .mainpage{
   width:100%;
 }
